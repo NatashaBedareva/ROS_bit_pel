@@ -1,0 +1,112 @@
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 2.5.4 (/opt/ros/jazzy/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+-- Found ament_lint_auto: 0.17.3 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+-- Configuring done (2.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup
+-- Install configuration: ""
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/launch
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/launch/nav_test.launch.py
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/launch/autorace_2025.launch.py
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/launch/diff_drive.launch.py
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/config
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/config/mapper.yaml
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/config/robot_bridge_nav.yaml
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/config/autorace_2023.rviz
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/config/costmap.yaml
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/config/diff_drive.rviz
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/config/robot_bridge.yaml
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/course.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/actor
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/actor/actor.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/actor/file6.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/actor/actor.dae
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/tunnel
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/tunnel/tunnel.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/tunnel/tunnel.glb
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/tunnel/model.config
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/construction_cone
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/construction_cone/model.config
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/construction_cone/construction_cone.dae
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/construction_cone/Construction_Cone_Diffuse.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/construction_cone/construction_cone.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_construction
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_construction/traffic_construction.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_construction/model.config
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_construction/traffic_construction.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/obstacle_tall.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_intersection
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_intersection/traffic_intersection.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_intersection/model.config
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_intersection/traffic_intersection.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_tunnel
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_tunnel/traffic_tunnel.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_tunnel/tunnel.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_tunnel/model.config
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/intersection
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/intersection/traffic_left.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/intersection/right.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/intersection/traffic_right.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/intersection/left.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_parking
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_parking/model.config
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_parking/traffic_parking.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_parking/traffic_parking.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/suv
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/suv/suv.dae
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/suv/suv.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/suv/wheels_01.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/suv/suv.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/Image_0.jpg
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/course_autorace_2025.glb
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/Image_0.002.jpg
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/Image_3.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/course.dae
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/course_v2.dae
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/course_v3.dae
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/course_v4.dae
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/pedestrian.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/materials/Image_0.001.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/obstacle.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/pedestrian_crossing_sign
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/pedestrian_crossing_sign/model.config
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/pedestrian_crossing_sign/model.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/pedestrian_crossing_sign/pedestrian_crossing_sign.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_light
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_light/yellow.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_light/red.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_light/traffic_light_yellow.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_light/green.sdf
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_light/traffic_light_red.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/worlds/traffic_light/traffic_light_green.png
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/environment/robot_bringup.dsv
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/environment/robot_bringup.sh
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/ament_index/resource_index/package_run_dependencies/robot_bringup
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/ament_index/resource_index/parent_prefix_path/robot_bringup
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/environment/ament_prefix_path.sh
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/environment/ament_prefix_path.dsv
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/environment/path.sh
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/environment/path.dsv
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/local_setup.bash
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/local_setup.sh
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/local_setup.zsh
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/local_setup.dsv
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.dsv
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/ament_index/resource_index/packages/robot_bringup
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/cmake/robot_bringupConfig.cmake
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/cmake/robot_bringupConfig-version.cmake
+-- Installing: /home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.xml

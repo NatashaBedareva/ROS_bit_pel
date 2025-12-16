@@ -1,0 +1,300 @@
+[0.196s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build']
+[0.196s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=20, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x78b06479d670>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x78b06479d700>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x78b06479d700>>, mixin_verb=('build',))
+[0.227s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.227s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.227s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.227s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.227s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.227s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.228s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/natalia/Documents/STUDING/ROS_bit_pel'
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.228s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extensions ['ignore', 'ignore_ament_install']
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extension 'ignore'
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extension 'ignore_ament_install'
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extensions ['colcon_pkg']
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extension 'colcon_pkg'
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extensions ['colcon_meta']
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extension 'colcon_meta'
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extensions ['ros']
+[0.249s] Level 1:colcon.colcon_core.package_identification:_identify(autorace_detect) by extension 'ros'
+[0.251s] DEBUG:colcon.colcon_core.package_identification:Package 'autorace_detect' with type 'ros.ament_python' and name 'autorace_detect'
+[0.251s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.251s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.251s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.251s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extensions ['ignore', 'ignore_ament_install']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extension 'ignore'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extension 'ignore_ament_install'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extensions ['colcon_pkg']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extension 'colcon_pkg'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extensions ['colcon_meta']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extension 'colcon_meta'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extensions ['ros']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extension 'ros'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extensions ['cmake', 'python']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extension 'cmake'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extension 'python'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extensions ['python_setup_py']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot) by extension 'python_setup_py'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extensions ['ignore', 'ignore_ament_install']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extension 'ignore'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extension 'ignore_ament_install'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extensions ['colcon_pkg']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extension 'colcon_pkg'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extensions ['colcon_meta']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extension 'colcon_meta'
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extensions ['ros']
+[0.252s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/referee_console) by extension 'ros'
+[0.253s] DEBUG:colcon.colcon_core.package_identification:Package 'my_robot/referee_console' with type 'ros.ament_python' and name 'referee_console'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extensions ['ignore', 'ignore_ament_install']
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extension 'ignore'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extension 'ignore_ament_install'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extensions ['colcon_pkg']
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extension 'colcon_pkg'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extensions ['colcon_meta']
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extension 'colcon_meta'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extensions ['ros']
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_bringup) by extension 'ros'
+[0.253s] DEBUG:colcon.colcon_core.package_identification:Package 'my_robot/robot_bringup' with type 'ros.ament_cmake' and name 'robot_bringup'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extensions ['ignore', 'ignore_ament_install']
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extension 'ignore'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extension 'ignore_ament_install'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extensions ['colcon_pkg']
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extension 'colcon_pkg'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extensions ['colcon_meta']
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extension 'colcon_meta'
+[0.253s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extensions ['ros']
+[0.254s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot/robot_description) by extension 'ros'
+[0.254s] DEBUG:colcon.colcon_core.package_identification:Package 'my_robot/robot_description' with type 'ros.ament_cmake' and name 'robot_description'
+[0.254s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.254s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.254s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.254s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.254s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.268s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[0.268s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[0.270s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 368 installed packages in /opt/ros/jazzy
+[0.272s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'cmake_args' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'cmake_target' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'cmake_clean_cache' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'cmake_clean_first' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'cmake_force_configure' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'ament_cmake_args' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'catkin_cmake_args' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'autorace_detect' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.303s] DEBUG:colcon.colcon_core.verb:Building package 'autorace_detect' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect', 'merge_install': False, 'path': '/home/natalia/Documents/STUDING/ROS_bit_pel/autorace_detect', 'symlink_install': False, 'test_result_base': None}
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'cmake_args' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'cmake_target' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'cmake_clean_cache' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'cmake_clean_first' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'cmake_force_configure' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'ament_cmake_args' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'catkin_cmake_args' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'referee_console' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.303s] DEBUG:colcon.colcon_core.verb:Building package 'referee_console' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console', 'merge_install': False, 'path': '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/referee_console', 'symlink_install': False, 'test_result_base': None}
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_args' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_target' from command line to 'None'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_clean_cache' from command line to 'False'
+[0.303s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_clean_first' from command line to 'False'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_force_configure' from command line to 'False'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'ament_cmake_args' from command line to 'None'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'catkin_cmake_args' from command line to 'None'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.304s] DEBUG:colcon.colcon_core.verb:Building package 'robot_bringup' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup', 'merge_install': False, 'path': '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/robot_bringup', 'symlink_install': False, 'test_result_base': None}
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_args' from command line to 'None'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_target' from command line to 'None'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_clean_cache' from command line to 'False'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_clean_first' from command line to 'False'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'cmake_force_configure' from command line to 'False'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'ament_cmake_args' from command line to 'None'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'catkin_cmake_args' from command line to 'None'
+[0.304s] Level 5:colcon.colcon_core.verb:set package 'robot_description' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.304s] DEBUG:colcon.colcon_core.verb:Building package 'robot_description' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description', 'merge_install': False, 'path': '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/robot_description', 'symlink_install': False, 'test_result_base': None}
+[0.304s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.305s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.305s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/natalia/Documents/STUDING/ROS_bit_pel/autorace_detect' with build type 'ament_python'
+[0.306s] Level 1:colcon.colcon_core.shell:create_environment_hook('autorace_detect', 'ament_prefix_path')
+[0.308s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.308s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/hook/ament_prefix_path.ps1'
+[0.309s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/hook/ament_prefix_path.dsv'
+[0.310s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/hook/ament_prefix_path.sh'
+[0.311s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.311s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.314s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/referee_console' with build type 'ament_python'
+[0.314s] Level 1:colcon.colcon_core.shell:create_environment_hook('referee_console', 'ament_prefix_path')
+[0.314s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/hook/ament_prefix_path.ps1'
+[0.315s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/hook/ament_prefix_path.dsv'
+[0.315s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/hook/ament_prefix_path.sh'
+[0.316s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.316s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.318s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/robot_bringup' with build type 'ament_cmake'
+[0.318s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/robot_bringup'
+[0.318s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.318s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.320s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/robot_description' with build type 'ament_cmake'
+[0.320s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/robot_description'
+[0.320s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.320s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.481s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/natalia/Documents/STUDING/ROS_bit_pel/autorace_detect'
+[0.482s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.482s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.646s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/referee_console'
+[0.646s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.646s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.651s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup -- -j20 -l20
+[0.656s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description -- -j20 -l20
+[0.711s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup -- -j20 -l20
+[0.727s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup
+[0.730s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description -- -j20 -l20
+[0.732s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description
+[0.759s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_description)
+[0.759s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_description
+[0.765s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description' for CMake module files
+[0.766s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description' for CMake config files
+[0.767s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_description', 'cmake_prefix_path')
+[0.767s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/hook/cmake_prefix_path.ps1'
+[0.768s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/hook/cmake_prefix_path.dsv'
+[0.768s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/hook/cmake_prefix_path.sh'
+[0.770s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/bin'
+[0.770s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/lib/pkgconfig/robot_description.pc'
+[0.770s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/lib/python3.12/site-packages'
+[0.771s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/bin'
+[0.771s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.ps1'
+[0.773s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.dsv'
+[0.774s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.sh'
+[0.776s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.bash'
+[0.777s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.zsh'
+[0.778s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/colcon-core/packages/robot_description)
+[0.778s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_description)
+[0.779s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description' for CMake module files
+[0.779s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description' for CMake config files
+[0.780s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_description', 'cmake_prefix_path')
+[0.780s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/hook/cmake_prefix_path.ps1'
+[0.780s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/hook/cmake_prefix_path.dsv'
+[0.781s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/hook/cmake_prefix_path.sh'
+[0.782s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/bin'
+[0.782s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/lib/pkgconfig/robot_description.pc'
+[0.782s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/lib/python3.12/site-packages'
+[0.783s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/bin'
+[0.784s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.ps1'
+[0.784s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.dsv'
+[0.785s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.sh'
+[0.785s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.bash'
+[0.786s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/robot_description/package.zsh'
+[0.786s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_description/share/colcon-core/packages/robot_description)
+[0.786s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_bringup)
+[0.787s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup' for CMake module files
+[0.788s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/natalia/Documents/STUDING/ROS_bit_pel/build/robot_bringup
+[0.789s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup' for CMake config files
+[0.789s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_bringup', 'cmake_prefix_path')
+[0.789s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/hook/cmake_prefix_path.ps1'
+[0.790s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/hook/cmake_prefix_path.dsv'
+[0.790s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/hook/cmake_prefix_path.sh'
+[0.791s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/bin'
+[0.791s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/lib/pkgconfig/robot_bringup.pc'
+[0.791s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/lib/python3.12/site-packages'
+[0.791s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/bin'
+[0.792s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.ps1'
+[0.792s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.dsv'
+[0.793s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.sh'
+[0.793s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.bash'
+[0.794s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.zsh'
+[0.794s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/colcon-core/packages/robot_bringup)
+[0.794s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_bringup)
+[0.795s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup' for CMake module files
+[0.795s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup' for CMake config files
+[0.795s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_bringup', 'cmake_prefix_path')
+[0.796s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/hook/cmake_prefix_path.ps1'
+[0.796s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/hook/cmake_prefix_path.dsv'
+[0.797s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/hook/cmake_prefix_path.sh'
+[0.798s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/bin'
+[0.798s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/lib/pkgconfig/robot_bringup.pc'
+[0.798s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/lib/python3.12/site-packages'
+[0.798s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/bin'
+[0.799s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.ps1'
+[0.799s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.dsv'
+[0.800s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.sh'
+[0.801s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.bash'
+[0.801s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/robot_bringup/package.zsh'
+[0.802s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/natalia/Documents/STUDING/ROS_bit_pel/install/robot_bringup/share/colcon-core/packages/robot_bringup)
+[1.282s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/natalia/Documents/STUDING/ROS_bit_pel/autorace_detect': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autorace_detect build --build-base /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build install --record /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/install.log --single-version-externally-managed install_data
+[1.284s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/referee_console': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/referee_console build --build-base /home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/build install --record /home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/install.log --single-version-externally-managed install_data
+[1.790s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console' for CMake module files
+[1.790s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/referee_console' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/referee_console build --build-base /home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/build install --record /home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/install.log --single-version-externally-managed install_data
+[1.791s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console' for CMake config files
+[1.791s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib'
+[1.792s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/bin'
+[1.792s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/pkgconfig/referee_console.pc'
+[1.792s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/python3.12/site-packages'
+[1.792s] Level 1:colcon.colcon_core.shell:create_environment_hook('referee_console', 'pythonpath')
+[1.792s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/hook/pythonpath.ps1'
+[1.793s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/hook/pythonpath.dsv'
+[1.793s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/hook/pythonpath.sh'
+[1.794s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/bin'
+[1.794s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(referee_console)
+[1.794s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/package.ps1'
+[1.794s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/package.dsv'
+[1.795s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/package.sh'
+[1.795s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/package.bash'
+[1.796s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/referee_console/package.zsh'
+[1.796s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/share/colcon-core/packages/referee_console)
+[1.797s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect' for CMake module files
+[1.798s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/natalia/Documents/STUDING/ROS_bit_pel/autorace_detect' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autorace_detect build --build-base /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build install --record /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/install.log --single-version-externally-managed install_data
+[1.798s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect' for CMake config files
+[1.799s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib'
+[1.799s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/bin'
+[1.799s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/pkgconfig/autorace_detect.pc'
+[1.800s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages'
+[1.800s] Level 1:colcon.colcon_core.shell:create_environment_hook('autorace_detect', 'pythonpath')
+[1.800s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/hook/pythonpath.ps1'
+[1.801s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/hook/pythonpath.dsv'
+[1.801s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/hook/pythonpath.sh'
+[1.802s] Level 1:colcon.colcon_core.environment:checking '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/bin'
+[1.802s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(autorace_detect)
+[1.803s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/package.ps1'
+[1.803s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/package.dsv'
+[1.804s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/package.sh'
+[1.804s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/package.bash'
+[1.804s] INFO:colcon.colcon_core.shell:Creating package script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/package.zsh'
+[1.805s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/colcon-core/packages/autorace_detect)
+[1.805s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[1.805s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[1.805s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[1.805s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[1.813s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[1.813s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[1.813s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[1.828s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[1.828s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/local_setup.ps1'
+[1.829s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/natalia/Documents/STUDING/ROS_bit_pel/install/_local_setup_util_ps1.py'
+[1.831s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/setup.ps1'
+[1.832s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/local_setup.sh'
+[1.832s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/natalia/Documents/STUDING/ROS_bit_pel/install/_local_setup_util_sh.py'
+[1.833s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/setup.sh'
+[1.835s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/local_setup.bash'
+[1.835s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/setup.bash'
+[1.837s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/local_setup.zsh'
+[1.837s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/natalia/Documents/STUDING/ROS_bit_pel/install/setup.zsh'

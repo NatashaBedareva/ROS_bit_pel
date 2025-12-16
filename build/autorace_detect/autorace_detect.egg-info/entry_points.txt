@@ -1,0 +1,2 @@
+[console_scripts]
+follow_path = autorace_detect.follow_path:main

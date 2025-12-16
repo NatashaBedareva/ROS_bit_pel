@@ -1,0 +1,63 @@
+running egg_info
+creating ../build/autorace_detect/autorace_detect.egg-info
+writing ../build/autorace_detect/autorace_detect.egg-info/PKG-INFO
+writing dependency_links to ../build/autorace_detect/autorace_detect.egg-info/dependency_links.txt
+writing entry points to ../build/autorace_detect/autorace_detect.egg-info/entry_points.txt
+writing requirements to ../build/autorace_detect/autorace_detect.egg-info/requires.txt
+writing top-level names to ../build/autorace_detect/autorace_detect.egg-info/top_level.txt
+writing manifest file '../build/autorace_detect/autorace_detect.egg-info/SOURCES.txt'
+reading manifest file '../build/autorace_detect/autorace_detect.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file '../build/autorace_detect/autorace_detect.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/autorace_detect
+copying autorace_detect/__init__.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/autorace_detect
+copying autorace_detect/follow_path.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/autorace_detect
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module
+copying module/logger.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module
+copying module/traffic_light.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module
+copying module/traffic_direction.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module
+copying module/__init__.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module
+copying module/config.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module
+running install
+running install_lib
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/autorace_detect
+copying /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/autorace_detect/__init__.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/autorace_detect
+copying /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/autorace_detect/follow_path.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/autorace_detect
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module
+copying /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module/logger.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module
+copying /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module/traffic_light.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module
+copying /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module/traffic_direction.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module
+copying /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module/__init__.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module
+copying /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module/config.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module
+byte-compiling /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/autorace_detect/__init__.py to __init__.cpython-312.pyc
+byte-compiling /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/autorace_detect/follow_path.py to follow_path.cpython-312.pyc
+byte-compiling /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module/logger.py to logger.cpython-312.pyc
+byte-compiling /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module/traffic_light.py to traffic_light.cpython-312.pyc
+byte-compiling /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module/traffic_direction.py to traffic_direction.cpython-312.pyc
+byte-compiling /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module/__init__.py to __init__.cpython-312.pyc
+byte-compiling /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module/config.py to config.cpython-312.pyc
+running install_data
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/ament_index
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/ament_index/resource_index
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/ament_index/resource_index/packages
+copying resource/autorace_detect -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/ament_index/resource_index/packages
+copying package.xml -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/launch
+copying launch/autorace_detect.launch.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/launch
+creating /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/signs
+copying signs/traffic_left.png -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/signs
+copying signs/traffic_intersection.png -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/signs
+copying signs/traffic_construction.png -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/signs
+copying signs/tunnel.png -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/signs
+copying signs/traffic_right.png -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/signs
+copying signs/pedestrian_crossing_sign.png -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/signs
+copying signs/traffic_parking.png -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/share/autorace_detect/signs
+running install_egg_info
+Copying ../build/autorace_detect/autorace_detect.egg-info to /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/autorace_detect-0.0.0-py3.12.egg-info
+running install_scripts
+Installing follow_path script to /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/autorace_detect
+writing list of installed files to '/home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/install.log'
