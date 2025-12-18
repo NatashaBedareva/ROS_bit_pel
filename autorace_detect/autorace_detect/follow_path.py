@@ -9,11 +9,11 @@ from module.config import (
     MAXIMUM_ANGLUAR_SPEED_CAP,
     MAX_LINIEAR_SPEED,
     ANALOG_CAP_MODE,
-
     LINE_HISTORY_SIZE,
     WHITE_MODE_CONSTANT,
     YELLOW_MODE_CONSTANT,
     FOLLOW_ROAD_CROP_HALF,
+    FOLLOW_ROAD_MODE,
 )
 
 # обработка светофора
@@ -62,25 +62,29 @@ class Follow_Trace_Node(Node):
 
         self._linear_speed = linear_speed
 
-        self._yellow_prevs = deque(maxlen=LINE_HISTORY_SIZE)
-        self.__white_prevs = deque(maxlen=LINE_HISTORY_SIZE)
-        self._yellow_prevs.append(0)
-        self.__white_prevs.append(0)
+        self._yellow_right_edge = deque(maxlen=LINE_HISTORY_SIZE)  # Правый край желтой линии
+        self._white_left_edge = deque(maxlen=LINE_HISTORY_SIZE)    # Левый край белой линии
+        
+        # Инициализируем с разумными значениями
+        self._yellow_right_edge.append(100)   # Желтая начинается примерно на 100 пикселе
+        self._white_left_edge.append(500)     # Белая начинается примерно на 500 пикселе
 
         self.E = 0
         self.old_e = 0
-        self.Kp = self.declare_parameter('Kp', value=3.0, descriptor=ParameterDescriptor(
+        self.Kp = self.declare_parameter('Kp', value=1.5, descriptor=ParameterDescriptor(
             type=ParameterType.PARAMETER_DOUBLE)).get_parameter_value().double_value
-        self.Ki = self.declare_parameter('Ki', value=1, descriptor=ParameterDescriptor(
+        self.Ki = self.declare_parameter('Ki', value=0.05, descriptor=ParameterDescriptor(
             type=ParameterType.PARAMETER_DOUBLE)).get_parameter_value().double_value
-        self.Kd = self.declare_parameter('Kd', value=0.25, descriptor=ParameterDescriptor(
+        self.Kd = self.declare_parameter('Kd', value=0.3, descriptor=ParameterDescriptor(
             type=ParameterType.PARAMETER_DOUBLE)).get_parameter_value().double_value
 
         self.STATUS_CAR = 0
         self.TASK_LEVEL = 0
         self.START_TIME = 0
 
-        self.MAIN_LINE = "WHITE"
+        self.MAIN_LINE = FOLLOW_ROAD_MODE
+        self.image_width = 0
+        self.image_height = 0
 
     # Обратный вызов для получения данных о положении
     def pose_callback(self, data):
@@ -96,90 +100,175 @@ class Follow_Trace_Node(Node):
     # Преобразование перспективы изображения
     def _warpPerspective(self, cvImg):
         h, w, _ = cvImg.shape
-        top_x_offset = 50
-
-        pts1 = np.float32([[0, 480], [w, 480], [top_x_offset, 300], [w-top_x_offset, 300]])
+        self.image_width = w
+        self.image_height = h
         
-        # 760 x 300
-        result_img_width = np.int32(abs(pts1[0][0] - pts1[1][0]))
-        result_img_height = np.int32(abs(pts1[0][1] - pts1[2][0]))
+        # Точки для перспективного преобразования
+        top_x_offset = 80  # Увеличил для лучшего обзора
         
-        pts2 = np.float32([[0, 0], [result_img_width, 0], [0, result_img_height], 
-                           [result_img_width, result_img_height]])
+        # Берем нижнюю часть изображения и преобразуем в вид сверху
+        pts1 = np.float32([
+            [0, h-1],           # Левый нижний
+            [w-1, h-1],         # Правый нижний
+            [top_x_offset, 350], # Левый верхний (поднял выше)
+            [w-top_x_offset, 350]  # Правый верхний (поднял выше)
+        ])
+        
+        # Вычисляем размеры выходного изображения
+        result_img_width = 640  # Фиксированная ширина
+        result_img_height = 480  # Фиксированная высота
+        
+        pts2 = np.float32([
+            [0, result_img_height-1],
+            [result_img_width-1, result_img_height-1],
+            [0, 0],
+            [result_img_width-1, 0]
+        ])
 
         M = cv2.getPerspectiveTransform(pts1, pts2)
         dst = cv2.warpPerspective(cvImg, M, (result_img_width, result_img_height))
 
-        cv2.imshow("orig", cvImg)
-
-        return cv2.flip(dst, 0)
+        return dst
 
     # Поиск желтой линии на изображении
-    def _find_yellow_line(self, perspectiveImg_, middle_h=None):
-        if FOLLOW_ROAD_CROP_HALF:
-            h_, w_, _ = perspectiveImg_.shape
-            perspectiveImg = perspectiveImg_[:, :w_//2, :]
-        else:
-            perspectiveImg = perspectiveImg_
-
-        yellow_mask = cv2.inRange(perspectiveImg, (0, 240, 255), (0, 255, 255))
-        yellow_mask = cv2.dilate(yellow_mask, np.ones((2, 2)), iterations=4)
-
-        middle_row = yellow_mask[middle_h]
-        try:
-            first_notYellow = np.int32(np.where(middle_row == 255))[0][-1]
-            self._yellow_prevs.append(first_notYellow)
-        except:  # Используем последние данные о линии и надеемся что все починится
-            first_notYellow = sum(self._yellow_prevs)//len(self._yellow_prevs)
+    def _find_yellow_line(self, perspectiveImg, middle_h=None):
+        h, w, _ = perspectiveImg.shape
+        
+        if middle_h is None:
+            middle_h = h // 2
+        
+        # Ищем желтый цвет в нижней части изображения (более стабильно)
+        search_height = middle_h
+        search_region = perspectiveImg[search_height-20:search_height+20, :]
+        
+        # Конвертируем в HSV для лучшего определения желтого
+        hsv = cv2.cvtColor(search_region, cv2.COLOR_BGR2HSV)
+        
+        # Диапазон для желтого цвета
+        lower_yellow = np.array([20, 100, 100])
+        upper_yellow = np.array([30, 255, 255])
+        
+        mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+        
+        # Морфологические операции для очистки
+        kernel = np.ones((5, 5), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        
+        # Находим контуры
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if contours:
+            # Берем самый большой контур
+            largest_contour = max(contours, key=cv2.contourArea)
+            
+            # Находим правый край контура (ближайший к центру дороги)
+            rightmost_point = tuple(largest_contour[largest_contour[:, :, 0].argmax()][0])
+            
+            # Корректируем координату по высоте
+            yellow_edge = rightmost_point[0]
+            
+            # Фильтруем выбросы
+            if len(self._yellow_right_edge) > 0:
+                last_value = self._yellow_right_edge[-1]
+                if abs(yellow_edge - last_value) < 100:  # Не допускаем резких скачков
+                    self._yellow_right_edge.append(yellow_edge)
+                    self.point_status = True
+                    return yellow_edge
+            
+            # Если значение странное, используем последнее хорошее
+            if len(self._yellow_right_edge) > 0:
+                return self._yellow_right_edge[-1]
+        
+        # Если не нашли желтую линию
+        if len(self._yellow_right_edge) > 0:
             self.point_status = False
-
-        return first_notYellow
+            return self._yellow_right_edge[-1]  # Используем последнее известное значение
+        else:
+            return 150  # Значение по умолчанию
 
     # Поиск белой линии на изображении
-    def _find_white_line(self, perspectiveImg_, middle_h=None):
-        fix_part = 0  # значения для исправления обрезки пополам
-
-        if FOLLOW_ROAD_CROP_HALF:
-            h_, w_, _ = perspectiveImg_.shape
-            perspectiveImg = perspectiveImg_[:, w_//2:, :]
-            fix_part = w_//2
-        else:
-            perspectiveImg = perspectiveImg_
-
-        white_mask = cv2.inRange(
-            perspectiveImg, (250, 250, 250), (255, 255, 255))
-
-        middle_row = white_mask[middle_h]
-        try:
-            first_white = np.int32(np.where(middle_row == 255))[0][0]
-            self.__white_prevs.append(first_white)
-        except:  # Используем последние данные о линии и надеемся что все починится
-            first_white = sum(self.__white_prevs)//len(self.__white_prevs)
+    def _find_white_line(self, perspectiveImg, middle_h=None):
+        h, w, _ = perspectiveImg.shape
+        
+        if middle_h is None:
+            middle_h = h // 2
+        
+        # Ищем белую линию в нижней части
+        search_height = middle_h
+        search_region = perspectiveImg[search_height-20:search_height+20, :]
+        
+        # Конвертируем в серый
+        gray = cv2.cvtColor(search_region, cv2.COLOR_BGR2GRAY)
+        
+        # Адаптивный порог для лучшего выделения белого
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, mask = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY)
+        
+        # Также используем HSV для белого
+        hsv = cv2.cvtColor(search_region, cv2.COLOR_BGR2HSV)
+        white_mask_hsv = cv2.inRange(hsv, (0, 0, 200), (180, 30, 255))
+        mask = cv2.bitwise_or(mask, white_mask_hsv)
+        
+        # Морфологические операции
+        kernel = np.ones((5, 5), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        
+        # Находим контуры
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if contours:
+            # Берем самый большой контур
+            largest_contour = max(contours, key=cv2.contourArea)
+            
+            # Находим левый край контура (ближайший к центру дороги)
+            leftmost_point = tuple(largest_contour[largest_contour[:, :, 0].argmin()][0])
+            
+            # Корректируем координату по высоте
+            white_edge = leftmost_point[0]
+            
+            # Фильтруем выбросы
+            if len(self._white_left_edge) > 0:
+                last_value = self._white_left_edge[-1]
+                if abs(white_edge - last_value) < 100:  # Не допускаем резких скачков
+                    self._white_left_edge.append(white_edge)
+                    self.point_status = True
+                    return white_edge
+            
+            # Если значение странное, используем последнее хорошее
+            if len(self._white_left_edge) > 0:
+                return self._white_left_edge[-1]
+        
+        # Если не нашли белую линию
+        if len(self._white_left_edge) > 0:
             self.point_status = False
-
-        return first_white + fix_part
+            return self._white_left_edge[-1]  # Используем последнее известное значение
+        else:
+            return 500  # Значение по умолчанию
 
     # Расчет новой угловой скорости с использованием PID-регулятора
-    def _compute_PID(self, target):
-        err = target
-        e = np.arctan2(np.sin(err), np.cos(err))
+    def _compute_PID(self, error):
+        # Нормализуем ошибку
+        e = np.arctan2(np.sin(error), np.cos(error))
 
         e_P = e
         e_I = self.E + e
         e_D = e - self.old_e
 
-        w = self.Kp*e_P + self.Ki*e_I + self.Kd*e_D
+        w = self.Kp * e_P + self.Ki * e_I + self.Kd * e_D
 
-        w = np.arctan2(np.sin(w), np.cos(w))
-
+        # Ограничиваем выход
+        w = max(min(w, 1.5), -1.5)
+        
+        # Обновляем интегральную составляющую
         self.E = self.E + e
         self.old_e = e
+        
         return w
 
     # Обработка данных с камеры
     def _callback_Ccamera(self, msg: Image):
-        self.point_status = True
-
         self.twist.linear.x = self._linear_speed
 
         # обрабатываем изображения с камеры
@@ -190,26 +279,33 @@ class Follow_Trace_Node(Node):
         perspective = self._warpPerspective(cvImg)
         perspective_h, persective_w, _ = perspective.shape
 
-        hLevelLine = int(perspective_h*LINES_H_RATIO)
+        hLevelLine = int(perspective_h * LINES_H_RATIO)
 
-        # получаем координаты края желтой линии и белой
-        if self.MAIN_LINE == "WHITE":
-            endYellow = WHITE_MODE_CONSTANT
-        else:
-            endYellow = self._find_yellow_line(perspective, hLevelLine)
+        # ВАЖНО: получаем ПРАВЫЙ край желтой линии и ЛЕВЫЙ край белой линии
+        yellow_edge = self._find_yellow_line(perspective, hLevelLine)
+        white_edge = self._find_white_line(perspective, hLevelLine)
         
-        if self.MAIN_LINE == "YELLOW":
-            startWhite = YELLOW_MODE_CONSTANT
-        else:
-            startWhite = self._find_white_line(perspective, hLevelLine)
+        # Дополнительная проверка: белая линия должна быть правее желтой
+        if white_edge <= yellow_edge + 50:  # Минимальное расстояние 50 пикселей
+            # Если линии слишком близко, корректируем
+            if self.point_status:  # Если данные актуальные
+                white_edge = yellow_edge + 200  # Устанавливаем разумное расстояние
+            else:
+                # Используем последние хорошие значения или устанавливаем разумные
+                white_edge = min(persective_w - 50, yellow_edge + 200)
 
-        middle_btw_lines = (startWhite + endYellow) // 2
-
-        center_crds = (persective_w//2, hLevelLine)
-        lines_center_crds = (middle_btw_lines, hLevelLine)
-
-        # центр справа - положительно, центр слева - отрицательно
-        direction = center_crds[0] - lines_center_crds[0]
+        # Вычисляем центр дороги
+        road_center = (yellow_edge + white_edge) / 2
+        image_center = persective_w / 2
+        
+        # Ошибка: положительная = нужно повернуть вправо, отрицательная = влево
+        error = image_center - road_center
+        
+        # Нормализуем ошибку
+        normalized_error = error / (persective_w / 2)
+        
+        center_crds = (int(image_center), hLevelLine)
+        lines_center_crds = (int(road_center), hLevelLine)
 
         # обработка первой таски, светофор
         if self.TASK_LEVEL == 0:
@@ -222,35 +318,64 @@ class Follow_Trace_Node(Node):
         
         # попытка остановиться
         if self.TASK_LEVEL == 2 and (time.time() - self.START_TIME) > 15:
-            # self.STATUS_CAR = 0 - изменять необязательно, можно ботика не останавливать
             self._msg.data = "autorace_data"
             self._sign_finish.publish(self._msg)   
         
-        # Выравниваем ботика если центры расходятся больше чем нужно
-        if (abs(direction) > OFFSET_BTW_CENTERS):
-            angle_to_goal = math.atan2(direction, 215)
-            angular_v = self._compute_PID(angle_to_goal)
+        # Управление роботом
+        if abs(error) > OFFSET_BTW_CENTERS:
+            # Преобразуем ошибку в угол
+            # Чем больше ошибка, тем больше угол поворота
+            angle_error = normalized_error * 0.5  # Коэффициент для преобразования в угол
+            
+            angular_v = self._compute_PID(angle_error)
             self.twist.angular.z = angular_v
 
             if ANALOG_CAP_MODE:
-                angular_v *= 3/4
-            self.twist.linear.x = abs(self._linear_speed * (MAXIMUM_ANGLUAR_SPEED_CAP - abs(angular_v)))
-        
+                # Плавное уменьшение скорости при поворотах
+                speed_factor = max(0.4, 1.0 - abs(angular_v) / MAXIMUM_ANGLUAR_SPEED_CAP)
+                self.twist.linear.x = self._linear_speed * speed_factor
+        else:
+            # Если ошибка маленькая, едем прямо
+            self.twist.angular.z = 0.0
+            self.twist.linear.x = self._linear_speed
 
         if INFO_LEVEL:
-            persective_drawed = cv2.rectangle(
-                perspective, center_crds, center_crds, (0, 255, 0), thickness=10)  # Центр изображения
-            if self.point_status:
-                persective_drawed = cv2.rectangle(
-                    persective_drawed, lines_center_crds, lines_center_crds, (0, 0, 255), thickness=10)  # центр точки между линиями
-            else:
-                persective_drawed = cv2.rectangle(
-                    persective_drawed, lines_center_crds, lines_center_crds, (50, 50, 50), thickness=10)  # центр точки между линиями
+            # Создаем изображение для отладки
+            debug_img = perspective.copy()
             
-            # Пытаемся соединить центр изображения с центром между линиями
-            cv2.imshow("img", persective_drawed)
+            # Рисуем линию сканирования
+            cv2.line(debug_img, (0, hLevelLine), (persective_w, hLevelLine), (255, 0, 0), 2)
+            
+            # Рисуем края линий
+            cv2.line(debug_img, (int(yellow_edge), hLevelLine-30), (int(yellow_edge), hLevelLine+30), 
+                    (0, 255, 255), 5)  # Желтая линия
+            cv2.line(debug_img, (int(white_edge), hLevelLine-30), (int(white_edge), hLevelLine+30), 
+                    (255, 255, 255), 5)  # Белая линия
+            
+            # Рисуем центры
+            cv2.circle(debug_img, center_crds, 8, (0, 255, 0), -1)  # Центр изображения - зеленый
+            if self.point_status:
+                cv2.circle(debug_img, lines_center_crds, 8, (0, 0, 255), -1)  # Центр дороги - красный
+            else:
+                cv2.circle(debug_img, lines_center_crds, 8, (100, 100, 100), -1)  # Центр дороги - серый
+            
+            # Рисуем линию между центрами
+            cv2.line(debug_img, center_crds, lines_center_crds, (255, 0, 255), 3)
+            
+            # Отображаем информацию
+            cv2.putText(debug_img, f"Error: {error:.1f}", (10, 30), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            cv2.putText(debug_img, f"Yellow: {yellow_edge:.0f}", (10, 60), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+            cv2.putText(debug_img, f"White: {white_edge:.0f}", (10, 90), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            cv2.putText(debug_img, f"Road Center: {road_center:.0f}", (10, 120), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+            cv2.putText(debug_img, f"Status: {'OK' if self.point_status else 'LOST'}", (10, 150), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0) if self.point_status else (0, 0, 255), 2)
+            
+            cv2.imshow("Road Following Debug", debug_img)
             cv2.waitKey(1)
-
 
         if self.STATUS_CAR == 1:
             self._robot_cmd_vel_pub.publish(self.twist)
