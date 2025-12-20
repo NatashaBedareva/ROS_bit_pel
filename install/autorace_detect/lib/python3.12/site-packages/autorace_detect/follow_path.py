@@ -86,6 +86,75 @@ class Follow_Trace_Node(Node):
         self.image_width = 0
         self.image_height = 0
 
+        # ДОБАВЛЯЕМ: состояние остановки
+        self._is_stopped = False
+        self._stop_start_time = 0
+        self._stop_duration = 3.0  # секунды остановки
+        self._stop_reason = ""  # причина остановки
+        self._stop_processed = False  # флаг, что остановка уже обработана
+        
+        # ДОБАВЛЯЕМ: время последней проверки знака остановки
+        self._last_stop_check_time = 0
+        self._stop_check_interval = 0.5  # проверять знак остановки каждые 0.5 секунд
+
+    def _stop_robot(self, reason="STOP_SIGN"):
+        log_info(self, f"[СТОП] Останавливаю робота: {reason}")
+        self.twist.linear.x = 0.0
+        self.twist.angular.z = 0.0
+        self._robot_cmd_vel_pub.publish(self.twist)
+        self._is_stopped = True
+        self._stop_start_time = time.time()
+        self._stop_reason = reason
+        self._stop_processed = False
+        
+        # Визуализация остановки
+        if INFO_LEVEL:
+            stop_img = np.zeros((200, 400, 3), dtype=np.uint8)
+            cv2.putText(stop_img, f"STOPPED: {reason}", (30, 80), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+            cv2.putText(stop_img, f"Waiting {self._stop_duration}s", (60, 120), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            cv2.imshow("Stop Status", stop_img)
+            cv2.waitKey(1)
+
+    # Функция возобновления движения
+    def _resume_robot(self):
+        log_info(self, "[СТОП] Возобновляю движение")
+        self.twist.linear.x = self._linear_speed
+        self._robot_cmd_vel_pub.publish(self.twist)
+        self._is_stopped = False
+        self._stop_processed = True
+        
+        if INFO_LEVEL:
+            cv2.destroyWindow("Stop Status")
+
+    # Обработка остановки
+    def _handle_stop(self):
+        if not self._is_stopped:
+            return False  # Робот не остановлен
+        
+        current_time = time.time()
+        elapsed = current_time - self._stop_start_time
+        
+        # Обновляем таймер
+        if INFO_LEVEL and elapsed < self._stop_duration:
+            stop_img = np.zeros((200, 400, 3), dtype=np.uint8)
+            remaining = self._stop_duration - elapsed
+            cv2.putText(stop_img, f"STOPPED: {self._stop_reason}", (30, 80), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+            cv2.putText(stop_img, f"Resume in: {remaining:.1f}s", (60, 120), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            cv2.imshow("Stop Status", stop_img)
+            cv2.waitKey(1)
+        
+        # Проверяем, прошло ли достаточно времени
+        if elapsed >= self._stop_duration:
+            self._resume_robot()
+            return False  # Остановка завершена
+        
+        return True  # Робот все еще остановлен
+
+
     # Обратный вызов для получения данных о положении
     def pose_callback(self, data):
         self.pose = data
@@ -267,81 +336,104 @@ class Follow_Trace_Node(Node):
         
         return w
 
-    # Обработка данных с камеры
+    # Обработка данных с камеры (ИСПРАВЛЕННАЯ ВЕРСИЯ)
     def _callback_Ccamera(self, msg: Image):
-        self.twist.linear.x = self._linear_speed
-
-        # обрабатываем изображения с камеры
+        # 1. Проверяем, не остановлен ли робот
+        if self._handle_stop():
+            return  # Пропускаем обработку, если робот остановлен
+        
+        # 2. Получаем изображение
         cvImg = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding=msg.encoding)
         cvImg = cv2.cvtColor(cvImg, cv2.COLOR_RGB2BGR)
 
-        # получаем изображения перед колесами
+        # 3. Обработка светофора
+        if self.TASK_LEVEL == 0:
+            check_traffic_lights(self, cvImg)
+
+        # 4. Устанавливаем скорость движения
+        self.twist.linear.x = self._linear_speed
+
+        # 5. Получаем изображения перед колесами
         perspective = self._warpPerspective(cvImg)
         perspective_h, persective_w, _ = perspective.shape
 
         hLevelLine = int(perspective_h * LINES_H_RATIO)
 
-        # ВАЖНО: получаем ПРАВЫЙ край желтой линии и ЛЕВЫЙ край белой линии
+        # 6. Находим линии
         yellow_edge = self._find_yellow_line(perspective, hLevelLine)
         white_edge = self._find_white_line(perspective, hLevelLine)
         
-        # Дополнительная проверка: белая линия должна быть правее желтой
-        if white_edge <= yellow_edge + 50:  # Минимальное расстояние 50 пикселей
-            # Если линии слишком близко, корректируем
-            if self.point_status:  # Если данные актуальные
-                white_edge = yellow_edge + 200  # Устанавливаем разумное расстояние
+        # 7. Проверяем корректность линий
+        if white_edge <= yellow_edge + 50:
+            if self.point_status:
+                white_edge = yellow_edge + 200
             else:
-                # Используем последние хорошие значения или устанавливаем разумные
                 white_edge = min(persective_w - 50, yellow_edge + 200)
 
-        # Вычисляем центр дороги
+        # 8. Вычисляем центр дороги и ошибку
         road_center = (yellow_edge + white_edge) / 2
         image_center = persective_w / 2
-        
-        # Ошибка: положительная = нужно повернуть вправо, отрицательная = влево
         error = image_center - road_center
-        
-        # Нормализуем ошибку
         normalized_error = error / (persective_w / 2)
-        
-        center_crds = (int(image_center), hLevelLine)
-        lines_center_crds = (int(road_center), hLevelLine)
 
-        # обработка первой таски, светофор
-        if self.TASK_LEVEL == 0:
-            check_traffic_lights(self, cvImg)
-
-        # обработка перекрестка
+        # 9. Обработка перекрестка
         if self.TASK_LEVEL == 1:
             self.START_TIME = time.time()
-            check_direction(self, cvImg)
+            
+            # Проверяем знак остановки (только если не остановлены и на перекрестке)
+            if not self._is_stopped:
+                # Проверяем знаки остановки (не слишком часто)
+                current_time = time.time()
+                if current_time - self._last_stop_check_time > self._stop_check_interval:
+                    # Используем updated функцию с already_stopped параметром
+                    from module.traffic_direction import check_stop_sign
+                    if check_stop_sign(cvImg, already_stopped=self._is_stopped):
+                        self._stop_robot(reason="STOP_SIGN")
+                        self._last_stop_check_time = current_time
+                        return
+            
+            # Проверяем направление (если не остановлены)
+            if not self._is_stopped:
+                # Используем updated функцию с already_stopped параметром
+                result = check_direction(self, cvImg, already_stopped=self._is_stopped)
+                
+                # Если check_direction вернул "STOP", останавливаем робота
+                if result == "STOP":
+                    self._stop_robot(reason="STOP_SIGN")
+                    return
         
-        # попытка остановиться
+        # 10. Попытка остановиться (финиш)
         if self.TASK_LEVEL == 2 and (time.time() - self.START_TIME) > 15:
             self._msg.data = "autorace_data"
             self._sign_finish.publish(self._msg)   
         
-        # Управление роботом
-        if abs(error) > OFFSET_BTW_CENTERS:
-            # Преобразуем ошибку в угол
-            # Чем больше ошибка, тем больше угол поворота
-            angle_error = normalized_error * 0.5  # Коэффициент для преобразования в угол
-            
-            angular_v = self._compute_PID(angle_error)
-            self.twist.angular.z = angular_v
+        # 11. Управление роботом (только если не остановлен)
+        if not self._is_stopped:
+            if abs(error) > OFFSET_BTW_CENTERS:
+                # Преобразуем ошибку в угол
+                angle_error = normalized_error * 0.5
+                
+                angular_v = self._compute_PID(angle_error)
+                self.twist.angular.z = angular_v
 
-            if ANALOG_CAP_MODE:
-                # Плавное уменьшение скорости при поворотах
-                speed_factor = max(0.4, 1.0 - abs(angular_v) / MAXIMUM_ANGLUAR_SPEED_CAP)
-                self.twist.linear.x = self._linear_speed * speed_factor
-        else:
-            # Если ошибка маленькая, едем прямо
-            self.twist.angular.z = 0.0
-            self.twist.linear.x = self._linear_speed
+                if ANALOG_CAP_MODE:
+                    # Плавное уменьшение скорости при поворотах
+                    speed_factor = max(0.4, 1.0 - abs(angular_v) / MAXIMUM_ANGLUAR_SPEED_CAP)
+                    self.twist.linear.x = self._linear_speed * speed_factor
+            else:
+                # Если ошибка маленькая, едем прямо
+                self.twist.angular.z = 0.0
+                self.twist.linear.x = self._linear_speed
 
+        # 12. Визуализация
         if INFO_LEVEL:
             # Создаем изображение для отладки
             debug_img = perspective.copy()
+            
+            # Добавляем информацию о состоянии остановки
+            if self._is_stopped:
+                cv2.putText(debug_img, "STOPPED", (10, 180), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
             
             # Рисуем линию сканирования
             cv2.line(debug_img, (0, hLevelLine), (persective_w, hLevelLine), (255, 0, 0), 2)
@@ -353,6 +445,9 @@ class Follow_Trace_Node(Node):
                     (255, 255, 255), 5)  # Белая линия
             
             # Рисуем центры
+            center_crds = (int(image_center), hLevelLine)
+            lines_center_crds = (int(road_center), hLevelLine)
+            
             cv2.circle(debug_img, center_crds, 8, (0, 255, 0), -1)  # Центр изображения - зеленый
             if self.point_status:
                 cv2.circle(debug_img, lines_center_crds, 8, (0, 0, 255), -1)  # Центр дороги - красный
@@ -373,11 +468,16 @@ class Follow_Trace_Node(Node):
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
             cv2.putText(debug_img, f"Status: {'OK' if self.point_status else 'LOST'}", (10, 150), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0) if self.point_status else (0, 0, 255), 2)
+            cv2.putText(debug_img, f"Task Level: {self.TASK_LEVEL}", (10, 210), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+            cv2.putText(debug_img, f"Main Line: {self.MAIN_LINE}", (10, 240), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
             
             cv2.imshow("Road Following Debug", debug_img)
             cv2.waitKey(1)
 
-        if self.STATUS_CAR == 1:
+        # 13. Публикуем команды управления
+        if self.STATUS_CAR == 1 and not self._is_stopped:
             self._robot_cmd_vel_pub.publish(self.twist)
 
 

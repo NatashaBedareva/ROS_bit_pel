@@ -1,0 +1,21 @@
+[1.087s] Invoking command in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/referee_console': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/referee_console build --build-base /home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/build install --record /home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/install.log --single-version-externally-managed install_data
+[1.370s] running egg_info
+[1.387s] writing ../../build/referee_console/referee_console.egg-info/PKG-INFO
+[1.388s] writing dependency_links to ../../build/referee_console/referee_console.egg-info/dependency_links.txt
+[1.388s] writing entry points to ../../build/referee_console/referee_console.egg-info/entry_points.txt
+[1.388s] writing requirements to ../../build/referee_console/referee_console.egg-info/requires.txt
+[1.388s] writing top-level names to ../../build/referee_console/referee_console.egg-info/top_level.txt
+[1.426s] reading manifest file '../../build/referee_console/referee_console.egg-info/SOURCES.txt'
+[1.427s] writing manifest file '../../build/referee_console/referee_console.egg-info/SOURCES.txt'
+[1.427s] running build
+[1.427s] running build_py
+[1.427s] running install
+[1.434s] running install_lib
+[1.452s] running install_data
+[1.452s] running install_egg_info
+[1.473s] removing '/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/python3.12/site-packages/referee_console-0.1.0-py3.12.egg-info' (and everything under it)
+[1.473s] Copying ../../build/referee_console/referee_console.egg-info to /home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/python3.12/site-packages/referee_console-0.1.0-py3.12.egg-info
+[1.474s] running install_scripts
+[1.608s] Installing mission_autorace_2025_referee script to /home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/referee_console
+[1.609s] writing list of installed files to '/home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/install.log'
+[1.650s] Invoked command in '/home/natalia/Documents/STUDING/ROS_bit_pel/my_robot/referee_console' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/natalia/Documents/STUDING/ROS_bit_pel/install/referee_console/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/referee_console build --build-base /home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/build install --record /home/natalia/Documents/STUDING/ROS_bit_pel/build/referee_console/install.log --single-version-externally-managed install_data

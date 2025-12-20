@@ -15,3 +15,11 @@ LINE_HISTORY_SIZE : int = 10  # Увеличил историю
 INFO_LEVEL : Literal[True, False] = True
 STATUS_CAR : Literal[0, 1] = 0
 LOGGING_POOL_SIZE : int = 3
+
+
+
+
+STOP_SIGN_ENABLED: bool = True
+STOP_SIGN_DURATION: float = 3.0  # Длительность остановки в секундах
+STOP_SIGN_CHECK_INTERVAL: float = 0.5  # Интервал проверки знака
+STOP_SIGN_THRESHOLD: int = 1000  # Порог синих пикселей для знака остановки
