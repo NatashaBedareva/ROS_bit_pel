@@ -19,7 +19,7 @@ from module.config import (
 # обработка светофора
 from module.traffic_light import check_traffic_lights
 # обработка поворота
-from module.traffic_direction import check_direction
+from module.traffic_direction import check_direction, analyze_arrow_direction
 # обработка логов
 from module.logger import log_info
 
@@ -91,11 +91,15 @@ class Follow_Trace_Node(Node):
         self._stop_start_time = 0
         self._stop_duration = 3.0  # секунды остановки
         self._stop_reason = ""  # причина остановки
-        self._stop_processed = False  # флаг, что остановка уже обработана
         
-        # ДОБАВЛЯЕМ: время последней проверки знака остановки
-        self._last_stop_check_time = 0
-        self._stop_check_interval = 0.5  # проверять знак остановки каждые 0.5 секунд
+        # ДОБАВЛЯЕМ: флаги для управления перекрестком
+        self._stop_sign_detected = False
+        self._direction_determined = False
+        self._ignore_stop_sign = False  # Игнорировать знак STOP после первой остановки
+        
+        # ДОБАВЛЯЕМ: время последней проверки
+        self._last_check_time = 0
+        self._check_interval = 0.2  # проверять каждые 0.2 секунды
 
     def _stop_robot(self, reason="STOP_SIGN"):
         log_info(self, f"[СТОП] Останавливаю робота: {reason}")
@@ -105,7 +109,10 @@ class Follow_Trace_Node(Node):
         self._is_stopped = True
         self._stop_start_time = time.time()
         self._stop_reason = reason
-        self._stop_processed = False
+        
+        # Если это знак STOP, устанавливаем флаги
+        if reason == "STOP_SIGN":
+            self._stop_sign_detected = True
         
         # Визуализация остановки
         if INFO_LEVEL:
@@ -123,7 +130,6 @@ class Follow_Trace_Node(Node):
         self.twist.linear.x = self._linear_speed
         self._robot_cmd_vel_pub.publish(self.twist)
         self._is_stopped = False
-        self._stop_processed = True
         
         if INFO_LEVEL:
             cv2.destroyWindow("Stop Status")
@@ -149,11 +155,49 @@ class Follow_Trace_Node(Node):
         
         # Проверяем, прошло ли достаточно времени
         if elapsed >= self._stop_duration:
+            # После остановки на знаке STOP, игнорируем его в будущем
+            if self._stop_reason == "STOP_SIGN":
+                self._ignore_stop_sign = True
+                log_info(self, "[СТОП] Игнорирую знак STOP до конца перекрестка")
+            
             self._resume_robot()
             return False  # Остановка завершена
         
         return True  # Робот все еще остановлен
 
+    # Проверка интервала проверки
+    def _should_check(self):
+        current_time = time.time()
+        if current_time - self._last_check_time < self._check_interval:
+            return False
+        self._last_check_time = current_time
+        return True
+
+    # Определение направления ВО ВРЕМЯ остановки
+    def _determine_direction_during_stop(self, img):
+        """Определяет направление поворота пока робот остановлен"""
+        if not self._is_stopped or self._direction_determined:
+            return
+        
+        # Анализируем направление знака
+        direction = analyze_arrow_direction(img)  # ИЗМЕНИТЬ ТУТ!
+        
+        if direction == "LEFT":
+            log_info(self, "[СТОП] Определил направление: ПОВОРОТ НАЛЕВО")
+            self.MAIN_LINE = "YELLOW"
+            self._direction_determined = True
+        elif direction == "RIGHT":
+            log_info(self, "[СТОП] Определил направление: ПОВОРОТ НАПРАВО")
+            self.MAIN_LINE = "WHITE"
+            self._direction_determined = True
+        elif direction == "STRAIGHT":
+            log_info(self, "[СТОП] Определил направление: ПРЯМО")
+            self.MAIN_LINE = "WHITE"
+            self._direction_determined = True
+        else:
+            log_info(self, "[СТОП] Направление не определено, буду поворачивать налево")
+            self.MAIN_LINE = "YELLOW"
+            self._direction_determined = True
 
     # Обратный вызов для получения данных о положении
     def pose_callback(self, data):
@@ -340,74 +384,89 @@ class Follow_Trace_Node(Node):
     def _callback_Ccamera(self, msg: Image):
         # 1. Проверяем, не остановлен ли робот
         if self._handle_stop():
-            return  # Пропускаем обработку, если робот остановлен
+            # Если робот остановлен, все равно получаем изображение для анализа направления
+            cvImg = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding=msg.encoding)
+            cvImg = cv2.cvtColor(cvImg, cv2.COLOR_RGB2BGR)
+            
+            # Определяем направление пока остановлен
+            if self.TASK_LEVEL == 1 and not self._direction_determined:
+                self._determine_direction_during_stop(cvImg)
+            
+            return
         
-        # 2. Получаем изображение
+        # 2. Проверяем интервал проверки
+        if not self._should_check():
+            return
+        
+        # 3. Получаем изображение
         cvImg = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding=msg.encoding)
         cvImg = cv2.cvtColor(cvImg, cv2.COLOR_RGB2BGR)
 
-        # 3. Обработка светофора
+        # 4. Проверяем угол для определения положения
+        angle = self.get_angle()
+        is_at_intersection = abs(angle) >= 2.80
+        
+        # 5. Обработка светофора
         if self.TASK_LEVEL == 0:
             check_traffic_lights(self, cvImg)
 
-        # 4. Устанавливаем скорость движения
+        # 6. Устанавливаем скорость движения
         self.twist.linear.x = self._linear_speed
 
-        # 5. Получаем изображения перед колесами
+        # 7. Получаем изображения перед колесами
         perspective = self._warpPerspective(cvImg)
         perspective_h, persective_w, _ = perspective.shape
 
         hLevelLine = int(perspective_h * LINES_H_RATIO)
 
-        # 6. Находим линии
+        # 8. Находим линии
         yellow_edge = self._find_yellow_line(perspective, hLevelLine)
         white_edge = self._find_white_line(perspective, hLevelLine)
         
-        # 7. Проверяем корректность линий
+        # 9. Проверяем корректность линий
         if white_edge <= yellow_edge + 50:
             if self.point_status:
                 white_edge = yellow_edge + 200
             else:
                 white_edge = min(persective_w - 50, yellow_edge + 200)
 
-        # 8. Вычисляем центр дороги и ошибку
+        # 10. Вычисляем центр дороги и ошибку
         road_center = (yellow_edge + white_edge) / 2
         image_center = persective_w / 2
         error = image_center - road_center
         normalized_error = error / (persective_w / 2)
 
-        # 9. Обработка перекрестка
+        # 11. Обработка перекрестка (TASK_LEVEL == 1)
         if self.TASK_LEVEL == 1:
-            self.START_TIME = time.time()
+            if self.START_TIME == 0:
+                self.START_TIME = time.time()
+                log_info(self, f"[ПЕРЕКРЕСТОК] Начинаем анализ перекрестка")
             
-            # Проверяем знак остановки (только если не остановлены и на перекрестке)
-            if not self._is_stopped:
-                # Проверяем знаки остановки (не слишком часто)
-                current_time = time.time()
-                if current_time - self._last_stop_check_time > self._stop_check_interval:
-                    # Используем updated функцию с already_stopped параметром
-                    from module.traffic_direction import check_stop_sign
-                    if check_stop_sign(cvImg, already_stopped=self._is_stopped):
-                        self._stop_robot(reason="STOP_SIGN")
-                        self._last_stop_check_time = current_time
-                        return
-            
-            # Проверяем направление (если не остановлены)
-            if not self._is_stopped:
-                # Используем updated функцию с already_stopped параметром
-                result = check_direction(self, cvImg, already_stopped=self._is_stopped)
+            # Если робот на перекрестке, проверяем дорожные знаки
+            if is_at_intersection:
+                # Проверяем дорожные знаки, игнорируем STOP если уже останавливались
+                result = check_direction(self, cvImg, 
+                                        is_at_intersection=True,
+                                        ignore_stop_sign=self._ignore_stop_sign)
                 
-                # Если check_direction вернул "STOP", останавливаем робота
-                if result == "STOP":
+                if result == "STOP_SIGN":
+                    # Обнаружен знак остановки - останавливаем робота
                     self._stop_robot(reason="STOP_SIGN")
                     return
+                elif result == "DIRECTION_DECIDED":
+                    # Направление определено, переходим к следующему этапу
+                    log_info(self, f"[ПЕРЕКРЕСТОК] Направление определено: {self.MAIN_LINE}")
+                    return
+                elif not self._direction_determined:
+                    # Если направление еще не определено, пытаемся его определить
+                    self._determine_direction_during_stop(cvImg)
         
-        # 10. Попытка остановиться (финиш)
+        # 12. Попытка остановиться (финиш)
         if self.TASK_LEVEL == 2 and (time.time() - self.START_TIME) > 15:
             self._msg.data = "autorace_data"
             self._sign_finish.publish(self._msg)   
         
-        # 11. Управление роботом (только если не остановлен)
+        # 13. Управление роботом (только если не остановлен)
         if not self._is_stopped:
             if abs(error) > OFFSET_BTW_CENTERS:
                 # Преобразуем ошибку в угол
@@ -425,7 +484,7 @@ class Follow_Trace_Node(Node):
                 self.twist.angular.z = 0.0
                 self.twist.linear.x = self._linear_speed
 
-        # 12. Визуализация
+        # 14. Визуализация
         if INFO_LEVEL:
             # Создаем изображение для отладки
             debug_img = perspective.copy()
@@ -472,11 +531,19 @@ class Follow_Trace_Node(Node):
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
             cv2.putText(debug_img, f"Main Line: {self.MAIN_LINE}", (10, 240), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+            cv2.putText(debug_img, f"Angle: {angle:.2f} rad", (10, 270), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+            cv2.putText(debug_img, f"At Intersection: {'YES' if is_at_intersection else 'NO'}", (10, 300), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+            cv2.putText(debug_img, f"Ignore Stop: {self._ignore_stop_sign}", (10, 330), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+            cv2.putText(debug_img, f"Dir Determined: {self._direction_determined}", (10, 360), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
             
             cv2.imshow("Road Following Debug", debug_img)
             cv2.waitKey(1)
 
-        # 13. Публикуем команды управления
+        # 15. Публикуем команды управления
         if self.STATUS_CAR == 1 and not self._is_stopped:
             self._robot_cmd_vel_pub.publish(self.twist)
 

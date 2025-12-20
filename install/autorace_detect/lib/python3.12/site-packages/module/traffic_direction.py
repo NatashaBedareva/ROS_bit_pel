@@ -1,4 +1,3 @@
-
 import cv2
 import numpy as np
 from module.config import INFO_LEVEL
@@ -22,17 +21,10 @@ def check_blue_color(img):
     return blue_mask 
 
 # Проверка на знак остановки (возвращает True если виден синий знак)
-def check_stop_sign(img, already_stopped=False):
+def check_stop_sign(img):
     """
     Проверяет наличие знака остановки.
-    
-    Args:
-        img: изображение с камеры
-        already_stopped: если True, не проверяем знак (робот уже остановлен)
     """
-    if already_stopped:
-        return False  # Если уже остановлен, не проверяем снова
-    
     blue_mask = check_blue_color(img)
     
     # Анализируем распределение синих пикселей
@@ -112,15 +104,159 @@ def check_stop_sign(img, already_stopped=False):
             blue_ratio > stop_threshold_ratio and
             circles_detected)
 
-# Определение направления поворота на знаке
-def check_direction(follow_trace, img, already_stopped=False):
+# Функция для выделения знака на изображении
+def extract_sign_region(img):
+    """
+    Выделяет область с дорожным знаком для анализа.
+    Возвращает маску знака и координаты ограничивающего прямоугольника.
+    """
+    blue_mask = check_blue_color(img)
+    height, width = blue_mask.shape[:2]
+    
+    # Находим контуры в синей маске
+    contours, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if not contours:
+        return None, None
+    
+    # Находим самый большой контур (скорее всего, это знак)
+    largest_contour = max(contours, key=cv2.contourArea)
+    
+    # Проверяем размер контура - должен быть достаточно большим
+    area = cv2.contourArea(largest_contour)
+    if area < 500:  # Минимальная площадь знака
+        return None, None
+    
+    # Получаем ограничивающий прямоугольник
+    x, y, w, h = cv2.boundingRect(largest_contour)
+    
+    # Создаем маску только для этого контура
+    sign_mask = np.zeros_like(blue_mask)
+    cv2.drawContours(sign_mask, [largest_contour], -1, 255, -1)
+    
+    # Вырезаем область знака из исходного изображения
+    sign_roi = sign_mask[y:y+h, x:x+w]
+    
+    if INFO_LEVEL:
+        # Показываем выделенный знак
+        sign_img = img[y:y+h, x:x+w].copy()
+        cv2.imshow("Extracted Sign", sign_img)
+        cv2.waitKey(1)
+    
+    return sign_mask, (x, y, w, h)
+
+# Анализ направления стрелки на знаке
+def analyze_arrow_direction(img):
+    """
+    Анализирует направление стрелки на знаке.
+    Возвращает: "LEFT", "RIGHT", "STRAIGHT", или None
+    """
+    # Сначала выделяем знак
+    sign_mask, bbox = extract_sign_region(img)
+    
+    if sign_mask is None or bbox is None:
+        return None
+    
+    x, y, w, h = bbox
+    
+    # Создаем копию изображения для анализа
+    analysis_img = img.copy()
+    
+    # Разделяем знак на три вертикальные зоны
+    zone_width = w // 3
+    left_zone = sign_mask[y:y+h, x:x+zone_width]
+    center_zone = sign_mask[y:y+h, x+zone_width:x+2*zone_width]
+    right_zone = sign_mask[y:y+h, x+2*zone_width:x+w]
+    
+    # Считаем синие пиксели в каждой зоне
+    left_pixels = cv2.countNonZero(left_zone)
+    center_pixels = cv2.countNonZero(center_zone)
+    right_pixels = cv2.countNonZero(right_zone)
+    
+    # Разделяем знак на две горизонтальные зоны (верх/низ)
+    zone_height = h // 2
+    top_zone = sign_mask[y:y+zone_height, x:x+w]
+    bottom_zone = sign_mask[y+zone_height:y+h, x:x+w]
+    
+    top_pixels = cv2.countNonZero(top_zone)
+    bottom_pixels = cv2.countNonZero(bottom_zone)
+    
+    # Анализируем форму стрелки
+    # Для стрелки влево: больше пикселей в правой части
+    # Для стрелки вправо: больше пикселей в левой части
+    # Для стрелки прямо: симметричное распределение
+    
+    # Вычисляем соотношения
+    left_right_ratio = left_pixels / right_pixels if right_pixels > 0 else 100
+    right_left_ratio = right_pixels / left_pixels if left_pixels > 0 else 100
+    
+    # Визуализация для отладки
+    if INFO_LEVEL:
+        debug_img = img.copy()
+        
+        # Рисуем ограничивающий прямоугольник знака
+        cv2.rectangle(debug_img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        
+        # Рисуем разделительные линии
+        cv2.line(debug_img, (x+zone_width, y), (x+zone_width, y+h), (255, 0, 0), 1)
+        cv2.line(debug_img, (x+2*zone_width, y), (x+2*zone_width, y+h), (255, 0, 0), 1)
+        cv2.line(debug_img, (x, y+zone_height), (x+w, y+zone_height), (255, 255, 0), 1)
+        
+        # Отображаем информацию
+        cv2.putText(debug_img, f"Left: {left_pixels}", (x, y-30), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        cv2.putText(debug_img, f"Center: {center_pixels}", (x+zone_width, y-30), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
+        cv2.putText(debug_img, f"Right: {right_pixels}", (x+2*zone_width, y-30), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        
+        # Определяем направление
+        direction = None
+        color = (128, 128, 128)
+        
+        if right_pixels > left_pixels * 1.5 and right_pixels > center_pixels:
+            direction = "LEFT"  # Стрелка влево: пиксели справа (острие стрелки)
+            color = (0, 255, 0)
+            direction_text = "ARROW: TURN LEFT"
+        elif left_pixels > right_pixels * 1.5 and left_pixels > center_pixels:
+            direction = "RIGHT"  # Стрелка вправо: пиксели слева (острие стрелки)
+            color = (0, 0, 255)
+            direction_text = "ARROW: TURN RIGHT"
+        elif center_pixels > left_pixels and center_pixels > right_pixels:
+            direction = "STRAIGHT"  # Стрелка прямо: пиксели в центре
+            color = (255, 255, 0)
+            direction_text = "ARROW: GO STRAIGHT"
+        else:
+            direction_text = "ARROW: UNKNOWN"
+        
+        cv2.putText(debug_img, direction_text, (x, y-60), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+        
+        cv2.imshow("Arrow Direction Analysis", debug_img)
+        cv2.waitKey(1)
+    
+    # Определяем направление стрелки
+    # Логика: стрелка указывает НАПРАВО, если острие справа (больше синего слева)
+    #         стрелка указывает НАЛЕВО, если острие слева (больше синего справа)
+    if right_pixels > left_pixels * 1.5 and right_pixels > center_pixels:
+        return "LEFT"  # Острие справа → стрелка указывает налево
+    elif left_pixels > right_pixels * 1.5 and left_pixels > center_pixels:
+        return "RIGHT"  # Острие слева → стрелка указывает направо
+    elif center_pixels > left_pixels and center_pixels > right_pixels:
+        return "STRAIGHT"  # Стрелка прямо
+    else:
+        return None
+
+# Основная функция проверки направления
+def check_direction(follow_trace, img, is_at_intersection=False, ignore_stop_sign=False):
     """
     Проверяет направление на перекрестке.
     
     Args:
         follow_trace: объект Follow_Trace_Node
         img: изображение с камеры
-        already_stopped: если True, пропускаем проверку знака остановки
+        is_at_intersection: если True, робот находится на перекрестке
+        ignore_stop_sign: если True, игнорируем проверку знака STOP
     """
     angle = follow_trace.get_angle()
     
@@ -140,96 +276,42 @@ def check_direction(follow_trace, img, already_stopped=False):
                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
         cv2.putText(display_img, f"Analysis Line: x={analysis_line_x}", (10, 90), 
                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        cv2.putText(display_img, f"Ignore Stop: {ignore_stop_sign}", (10, 120), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
         
         if abs(angle) >= 2.80 and follow_trace.TASK_LEVEL == 1:
-            cv2.putText(display_img, "AT INTERSECTION - ANALYZING", (10, 120), 
+            cv2.putText(display_img, "AT INTERSECTION - ANALYZING", (10, 150), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
         
         cv2.imshow("Robot Camera View", display_img)
         cv2.waitKey(1)
     
-    # 1. Проверяем знак остановки только если НЕ уже остановлены
-    if follow_trace.TASK_LEVEL == 1 and not already_stopped:
-        if check_stop_sign(img, already_stopped):
+    # 1. Проверяем знак остановки (если на перекрестке и не игнорируем)
+    if is_at_intersection and follow_trace.TASK_LEVEL == 1 and not ignore_stop_sign:
+        if check_stop_sign(img):
             log_info(follow_trace, "[ДОРОЖНЫЙ ЗНАК] Обнаружен знак остановки")
-            return "STOP"  # Возвращаем сигнал об остановке
+            return "STOP_SIGN"  # Возвращаем сигнал об остановке
     
-    # 2. Проверяем направление поворота (только если робот на перекрестке и TASK_LEVEL == 1)
-    if abs(angle) >= 2.80 and follow_trace.TASK_LEVEL == 1:
-        blue_mask = check_blue_color(img)
+    # 2. Если на перекрестке и TASK_LEVEL == 1, проверяем направление
+    if is_at_intersection and follow_trace.TASK_LEVEL == 1:
+        # Анализируем направление стрелки на знаке
+        direction = analyze_arrow_direction(img)
         
-        # Фокус на верхнюю часть для знаков направления
-        height, width = blue_mask.shape[:2]
-        upper_part = height // 3
-        blue_mask_upper = blue_mask[:upper_part, :]
-        
-        # СМЕЩАЕМ ОБЛАСТЬ АНАЛИЗА ВЛЕВО
-        analysis_line_x = 200  # БЫЛО 300
-        
-        if INFO_LEVEL:
-            overlay = img.copy()
-            cv2.line(overlay, (0, upper_part), (width, upper_part), (255, 255, 0), 2)
-            
-            blue_mask_colored = cv2.cvtColor(blue_mask, cv2.COLOR_GRAY2BGR)
-            blue_mask_colored[:, :, 0] = 255
-            
-            alpha = 0.3
-            cv2.addWeighted(blue_mask_colored, alpha, overlay, 1 - alpha, 0, overlay)
-            
-            # Рисуем разделительную линию - СМЕЩЕНА ВЛЕВО
-            cv2.line(overlay, (analysis_line_x, 0), (analysis_line_x, height), (0, 255, 0), 2)
-            
-            left_half_upper = blue_mask_upper[:, :analysis_line_x]
-            right_half_upper = blue_mask_upper[:, analysis_line_x:]
-            left_count = cv2.countNonZero(left_half_upper)
-            right_count = cv2.countNonZero(right_half_upper)
-            
-            cv2.putText(overlay, f"L: {left_count}", (50, 50), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            cv2.putText(overlay, f"R: {right_count}", (analysis_line_x + 50, 50), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            
-            cv2.imshow("Blue Detection", overlay)
-            cv2.waitKey(1)
-        
-        # Используем смещенную линию для анализа
-        left_half = blue_mask_upper[:, :analysis_line_x]
-        right_half = blue_mask_upper[:, analysis_line_x:]
-
-        if INFO_LEVEL:
-            direction_img = img.copy()
-            height, width = direction_img.shape[:2]
-            
-            left_count = cv2.countNonZero(left_half)
-            right_count = cv2.countNonZero(right_half)
-            
-            cv2.putText(direction_img, f"Left (upper): {left_count}", (50, 50), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            cv2.putText(direction_img, f"Right (upper): {right_count}", (analysis_line_x + 50, 50), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            
-            if left_count >= right_count:
-                result_text = "DECISION: TURN LEFT"
-                color = (0, 255, 0)
-            else:
-                result_text = "DECISION: TURN RIGHT"
-                color = (0, 0, 255)
-            
-            cv2.putText(direction_img, result_text, (width//2 - 150, height//2), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2)
-            
-            cv2.imshow("Direction Decision", direction_img)
-            cv2.waitKey(1)
-
-        # Определяем направление
-        if cv2.countNonZero(left_half) >= cv2.countNonZero(right_half):
-            log_info(follow_trace, "[Перекресток] Поворот налево")
+        if direction == "LEFT":
+            log_info(follow_trace, "[Перекресток] Стрелка указывает: ПОВОРОТ НАЛЕВО")
             follow_trace.MAIN_LINE = "YELLOW"
-        else:
-            log_info(follow_trace, "[Перекресток] Поворот направо")
+        elif direction == "RIGHT":
+            log_info(follow_trace, "[Перекресток] Стрелка указывает: ПОВОРОТ НАПРАВО")
             follow_trace.MAIN_LINE = "WHITE"
+        elif direction == "STRAIGHT":
+            log_info(follow_trace, "[Перекресток] Стрелка указывает: ПРЯМО")
+            follow_trace.MAIN_LINE = "WHITE"  # По умолчанию едем по белой линии
+        else:
+            # Если не определили направление стрелки, используем старую логику
+            log_info(follow_trace, "[Перекресток] Направление не определено, поворачиваю налево")
+            follow_trace.MAIN_LINE = "YELLOW"
         
         follow_trace.TASK_LEVEL = 2
-        return "TURN"
+        return "DIRECTION_DECIDED"
     
     return None  # Ничего не обнаружено
