@@ -258,13 +258,15 @@ class Follow_Trace_Node(Node):
         
         # Точки для перспективного преобразования
         top_x_offset = 80  # Увеличил для лучшего обзора
+
+        top_y = 200
         
         # Берем нижнюю часть изображения и преобразуем в вид сверху
         pts1 = np.float32([
             [0, h-1],           # Левый нижний
             [w-1, h-1],         # Правый нижний
-            [top_x_offset, 350], # Левый верхний (поднял выше)
-            [w-top_x_offset, 350]  # Правый верхний (поднял выше)
+            [top_x_offset, top_y], # Левый верхний (поднял выше)
+            [w-top_x_offset, top_y]  # Правый верхний (поднял выше)
         ])
         
         # Вычисляем размеры выходного изображения
@@ -286,14 +288,14 @@ class Follow_Trace_Node(Node):
     # Поиск желтой линии на изображении
     def _find_yellow_line(self, perspectiveImg, middle_h=None):
         h, w, _ = perspectiveImg.shape
-        
+    
         if middle_h is None:
             middle_h = h // 2
         
-        # Ищем желтый цвет в нижней части изображения (более стабильно)
-        search_height = middle_h
-        search_region = perspectiveImg[search_height-20:search_height+20, :]
-        
+        # РАСШИРЯЕМ ОБЛАСТЬ ПОИСКА - увеличиваем высоту поиска
+        search_height_range = 50  # Было 20, теперь ±50 пикселей
+        search_region = perspectiveImg[middle_h-search_height_range:middle_h+search_height_range, :]
+            
         # Конвертируем в HSV для лучшего определения желтого
         hsv = cv2.cvtColor(search_region, cv2.COLOR_BGR2HSV)
         
@@ -347,10 +349,10 @@ class Follow_Trace_Node(Node):
         if middle_h is None:
             middle_h = h // 2
         
-        # Ищем белую линию в нижней части
-        search_height = middle_h
-        search_region = perspectiveImg[search_height-20:search_height+20, :]
-        
+        # РАСШИРЯЕМ ОБЛАСТЬ ПОИСКА - увеличиваем высоту поиска
+        search_height_range = 50  # Было 20, теперь ±50 пикселей
+        search_region = perspectiveImg[middle_h-search_height_range:middle_h+search_height_range, :]
+            
         # Конвертируем в серый
         gray = cv2.cvtColor(search_region, cv2.COLOR_BGR2GRAY)
         

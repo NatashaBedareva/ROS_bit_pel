@@ -2,7 +2,7 @@ from typing import Literal
 
 OFFSET_BTW_CENTERS : int = 20 # Увеличил смещение для более плавного реагирования
 LINES_H_RATIO : float = 0.7  # Использую 70% высоты - хороший компромисс
-MAX_LINIEAR_SPEED : float = 0.1 # Чуть уменьшил скорость для стабильности
+MAX_LINIEAR_SPEED : float = 0.1  # Чуть уменьшил скорость для стабильности
 ANALOG_CAP_MODE : bool = True
 MAXIMUM_ANGLUAR_SPEED_CAP : float = 1.5
 
