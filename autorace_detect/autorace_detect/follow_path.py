@@ -1,3 +1,4 @@
+
 import os
 import time
 from collections import deque
@@ -101,16 +102,31 @@ class Follow_Trace_Node(Node):
         self._last_check_time = 0
         self._check_interval = 0.2  # проверять каждые 0.2 секунды
 
-            # ДОБАВЛЯЕМ: состояние выполнения поворота
+        # ДОБАВЛЯЕМ: состояние выполнения поворота
         self._is_turning = False
         self._turn_start_time = 0
-        self._turn_duration = 1.0  # секунды поворота
+        self._turn_duration = 1.5  # секунды поворота
         self._turn_direction = None  # "LEFT" или "RIGHT"
         self._turn_completed = False
         
         # ДОБАВЛЯЕМ: временные переменные для поворота
         self._turn_angular_speed = 1.0  # радиан/сек для поворота
         self._turn_linear_speed = 0.3   # м/с во время поворота
+
+        self._turn_angular_speed_RIGHT = 0.5  # радиан/сек для поворота НАПРАВО
+        
+        # ДОБАВЛЯЕМ: состояние поиска линии после поворота
+        self._line_search_mode = False
+        self._search_start_time = 0
+        self._search_duration = 2.0  # максимум 2 секунды поиска
+        self._search_angular_speed = 0.4  # скорость поиска
+        self._lines_found = False
+        self._search_direction = None  # направление поиска
+        
+        # ДОБАВЛЯЕМ: счетчики для определения качества обнаружения линии
+        self._consecutive_detections = 0
+        self._consecutive_misses = 0
+        self._min_detections = 5  # минимальное количество последовательных обнаружений для подтверждения линии
 
 
 
@@ -259,7 +275,7 @@ class Follow_Trace_Node(Node):
         # Точки для перспективного преобразования
         top_x_offset = 80  # Увеличил для лучшего обзора
 
-        top_y = 200
+        top_y = 350
         
         # Берем нижнюю часть изображения и преобразуем в вид сверху
         pts1 = np.float32([
@@ -422,196 +438,337 @@ class Follow_Trace_Node(Node):
         
         return w
 
-    # Обработка данных с камеры (ИСПРАВЛЕННАЯ ВЕРСИЯ с поворотом)
+        # Обработка данных с камеры (ИСПРАВЛЕННАЯ ВЕРСИЯ с поворотом)
     def _callback_Ccamera(self, msg: Image):
-        # 1. Проверяем, не выполняется ли поворот
-        if self._is_turning:
-            if self._execute_turn():
-                return  # Продолжаем поворот
-            else:
-                # Поворот завершен, продолжаем нормальное движение
-                pass
-        
-        # 2. Проверяем, не остановлен ли робот
-        if self._handle_stop():
-            # Если робот остановлен, все равно получаем изображение для анализа направления
+            # 1. Проверяем, не выполняется ли поиск линии
+            if self._line_search_mode:
+                cvImg = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding=msg.encoding)
+                cvImg = cv2.cvtColor(cvImg, cv2.COLOR_RGB2BGR)
+                perspective = self._warpPerspective(cvImg)
+                
+                if self._search_for_line(perspective):
+                    return  # Продолжаем поиск
+                else:
+                    # Поиск завершен (успешно или по таймауту)
+                    if self._lines_found:
+                        log_info(self, "[ПОИСК] Линии найдены, продолжаю нормальное движение")
+                        self.TASK_LEVEL = 2
+                    else:
+                        log_info(self, "[ПОИСК] Линии не найдены, продолжаю с последними значениями")
+                        self.TASK_LEVEL = 2
+                    # Продолжаем нормальное выполнение
+            
+            # 2. Проверяем, не выполняется ли поворот
+            if self._is_turning:
+                if self._execute_turn():
+                    return  # Продолжаем поворот
+                else:
+                    # Поворот завершен, продолжаем нормальное движение
+                    pass
+            
+            # 3. Проверяем, не остановлен ли робот
+            if self._handle_stop():
+                # Если робот остановлен, все равно получаем изображение для анализа направления
+                cvImg = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding=msg.encoding)
+                cvImg = cv2.cvtColor(cvImg, cv2.COLOR_RGB2BGR)
+                
+                # Определяем направление пока остановлен
+                if self.TASK_LEVEL == 1 and not self._direction_determined:
+                    self._determine_direction_during_stop(cvImg)
+                
+                return
+            
+            # 4. Проверяем интервал проверки
+            if not self._should_check():
+                return
+            
+            # 5. Получаем изображение
             cvImg = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding=msg.encoding)
             cvImg = cv2.cvtColor(cvImg, cv2.COLOR_RGB2BGR)
+
+            # 6. Проверяем угол для определения положения
+            angle = self.get_angle()
+            is_at_intersection = abs(angle) >= 2.80
             
-            # Определяем направление пока остановлен
-            if self.TASK_LEVEL == 1 and not self._direction_determined:
-                self._determine_direction_during_stop(cvImg)
+            # 7. Обработка светофора
+            if self.TASK_LEVEL == 0:
+                check_traffic_lights(self, cvImg)
+
+            # 8. Устанавливаем скорость движения
+            self.twist.linear.x = self._linear_speed
+
+            # 9. Получаем изображения перед колесами
+            perspective = self._warpPerspective(cvImg)
+            perspective_h, persective_w, _ = perspective.shape
+
+            hLevelLine = int(perspective_h * LINES_H_RATIO)
+
+            # 10. Находим линии
+            yellow_edge = self._find_yellow_line(perspective, hLevelLine)
+            white_edge = self._find_white_line(perspective, hLevelLine)
             
-            return
-        
-        # 3. Проверяем интервал проверки
-        if not self._should_check():
-            return
-        
-        # 4. Получаем изображение
-        cvImg = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding=msg.encoding)
-        cvImg = cv2.cvtColor(cvImg, cv2.COLOR_RGB2BGR)
+            # 11. Проверяем корректность линий
+            if white_edge <= yellow_edge + 50:
+                if self.point_status:
+                    white_edge = yellow_edge + 200
+                else:
+                    white_edge = min(persective_w - 50, yellow_edge + 200)
 
-        # 5. Проверяем угол для определения положения
-        angle = self.get_angle()
-        is_at_intersection = abs(angle) >= 2.80
-        
-        # 6. Обработка светофора
-        if self.TASK_LEVEL == 0:
-            check_traffic_lights(self, cvImg)
+            # 12. Вычисляем центр дороги и ошибку
+            road_center = (yellow_edge + white_edge) / 2
+            image_center = persective_w / 2
+            error = image_center - road_center
+            normalized_error = error / (persective_w / 2)
 
-        # 7. Устанавливаем скорость движения
-        self.twist.linear.x = self._linear_speed
-
-        # 8. Получаем изображения перед колесами
-        perspective = self._warpPerspective(cvImg)
-        perspective_h, persective_w, _ = perspective.shape
-
-        hLevelLine = int(perspective_h * LINES_H_RATIO)
-
-        # 9. Находим линии
-        yellow_edge = self._find_yellow_line(perspective, hLevelLine)
-        white_edge = self._find_white_line(perspective, hLevelLine)
-        
-        # 10. Проверяем корректность линий
-        if white_edge <= yellow_edge + 50:
-            if self.point_status:
-                white_edge = yellow_edge + 200
-            else:
-                white_edge = min(persective_w - 50, yellow_edge + 200)
-
-        # 11. Вычисляем центр дороги и ошибку
-        road_center = (yellow_edge + white_edge) / 2
-        image_center = persective_w / 2
-        error = image_center - road_center
-        normalized_error = error / (persective_w / 2)
-
-        # 12. Обработка перекрестка (TASK_LEVEL == 1)
-        if self.TASK_LEVEL == 1:
-            if self.START_TIME == 0:
-                self.START_TIME = time.time()
-                log_info(self, f"[ПЕРЕКРЕСТОК] Начинаем анализ перекрестка")
-            
-            # Если робот на перекрестке, проверяем дорожные знаки
-            if is_at_intersection:
-                # Проверяем дорожные знаки, игнорируем STOP если уже останавливались
-                result = check_direction(self, cvImg, 
-                                        is_at_intersection=True,
-                                        ignore_stop_sign=self._ignore_stop_sign)
+            # 13. Обработка перекрестка (TASK_LEVEL == 1)
+            if self.TASK_LEVEL == 1:
+                if self.START_TIME == 0:
+                    self.START_TIME = time.time()
+                    log_info(self, f"[ПЕРЕКРЕСТОК] Начинаем анализ перекрестка")
                 
-                if result == "STOP_SIGN":
-                    # Обнаружен знак остановки - останавливаем робота
-                    self._stop_robot(reason="STOP_SIGN")
-                    return
-                elif result == "DIRECTION_DECIDED":
-                    # Направление определено, переходим к следующему этапу
-                    log_info(self, f"[ПЕРЕКРЕСТОК] Направление определено: {self.MAIN_LINE}")
+                # Если робот на перекрестке, проверяем дорожные знаки
+                if is_at_intersection:
+                    # Проверяем дорожные знаки, игнорируем STOP если уже останавливались
+                    result = check_direction(self, cvImg, 
+                                            is_at_intersection=True,
+                                            ignore_stop_sign=self._ignore_stop_sign)
                     
-                    # ЗАПУСКАЕМ ПОВОРОТ ПОСЛЕ ОПРЕДЕЛЕНИЯ НАПРАВЛЕНИЯ
-                    if self.MAIN_LINE == "YELLOW":
-                        self._start_turn("LEFT")
-                    else:
-                        self._start_turn("RIGHT")
+                    if result == "STOP_SIGN":
+                        # Обнаружен знак остановки - останавливаем робота
+                        self._stop_robot(reason="STOP_SIGN")
+                        return
+                    elif result == "DIRECTION_DECIDED":
+                        # Направление определено, переходим к следующему этапу
+                        log_info(self, f"[ПЕРЕКРЕСТОК] Направление определено: {self.MAIN_LINE}")
                         
-                    return
-                elif not self._direction_determined:
-                    # Если направление еще не определено, пытаемся его определить
-                    self._determine_direction_during_stop(cvImg)
-        
-        # 13. Попытка остановиться (финиш)
-        if self.TASK_LEVEL == 2 and (time.time() - self.START_TIME) > 15:
-            self._msg.data = "autorace_data"
-            self._sign_finish.publish(self._msg)   
-        
-        # 14. Управление роботом (только если не остановлен и не поворачивает)
-        if not self._is_stopped and not self._is_turning:
-            if abs(error) > OFFSET_BTW_CENTERS:
-                # Преобразуем ошибку в угол
-                angle_error = normalized_error * 0.5
+                        # ЗАПУСКАЕМ ПОВОРОТ ПОСЛЕ ОПРЕДЕЛЕНИЯ НАПРАВЛЕНИЯ
+                        if self.MAIN_LINE == "YELLOW":
+                            self._start_turn("LEFT")
+                        else:
+                            self._start_turn("RIGHT")
+                            
+                        return
+                    elif not self._direction_determined:
+                        # Если направление еще не определено, пытаемся его определить
+                        self._determine_direction_during_stop(cvImg)
+            
+            # 14. Попытка остановиться (финиш)
+            if self.TASK_LEVEL == 2 and (time.time() - self.START_TIME) > 15:
+                self._msg.data = "autorace_data"
+                self._sign_finish.publish(self._msg)   
+            
+            # 15. Управление роботом (только если не остановлен, не поворачивает и не ищет линии)
+            if not self._is_stopped and not self._is_turning and not self._line_search_mode:
+                # ДОБАВЛЯЕМ: логику для доворота при потере линии
+                if not self.point_status:
+                    # Линии потеряны - доворачиваем в последнем направлении
+                    log_info(self, f"[ВОССТАНОВЛЕНИЕ] Линии потеряны, доворачиваю")
+                    
+                    if self.MAIN_LINE == "YELLOW":
+                        # Для желтой линии (левый поворот) доворачиваем налево
+                        self.twist.angular.z = 0.3
+                        self.twist.linear.x = self._linear_speed * 0.6
+                    else:
+                        # Для белой линии (правый поворот) доворачиваем направо
+                        self.twist.angular.z = -0.3
+                        self.twist.linear.x = self._linear_speed * 0.6
+                elif abs(error) > OFFSET_BTW_CENTERS:
+                    # Преобразуем ошибку в угол
+                    angle_error = normalized_error * 0.5
+                    
+                    angular_v = self._compute_PID(angle_error)
+                    self.twist.angular.z = angular_v
+
+                    if ANALOG_CAP_MODE:
+                        # Плавное уменьшение скорости при поворотах
+                        speed_factor = max(0.4, 1.0 - abs(angular_v) / MAXIMUM_ANGLUAR_SPEED_CAP)
+                        self.twist.linear.x = self._linear_speed * speed_factor
+                else:
+                    # Если ошибка маленькая, едем прямо
+                    self.twist.angular.z = 0.0
+                    self.twist.linear.x = self._linear_speed
+
+            # 16. Визуализация
+            if INFO_LEVEL:
+                # Создаем изображение для отладки
+                debug_img = perspective.copy()
                 
-                angular_v = self._compute_PID(angle_error)
-                self.twist.angular.z = angular_v
-
-                if ANALOG_CAP_MODE:
-                    # Плавное уменьшение скорости при поворотах
-                    speed_factor = max(0.4, 1.0 - abs(angular_v) / MAXIMUM_ANGLUAR_SPEED_CAP)
-                    self.twist.linear.x = self._linear_speed * speed_factor
-            else:
-                # Если ошибка маленькая, едем прямо
-                self.twist.angular.z = 0.0
-                self.twist.linear.x = self._linear_speed
-
-        # 15. Визуализация
-        if INFO_LEVEL:
-            # Создаем изображение для отладки
-            debug_img = perspective.copy()
-            
-            # Добавляем информацию о состоянии остановки
-            if self._is_stopped:
-                cv2.putText(debug_img, "STOPPED", (10, 180), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-            
-            # Добавляем информацию о состоянии поворота
-            if self._is_turning:
-                cv2.putText(debug_img, f"TURNING {self._turn_direction}", (10, 390), 
+                # Добавляем информацию о состоянии поиска
+                if self._line_search_mode:
+                    cv2.putText(debug_img, "LINE SEARCH", (10, 390), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0), 2)
+                    cv2.putText(debug_img, f"Dir: {self._search_direction}", (10, 420), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0), 2)
+                
+                # Добавляем информацию о состоянии остановки
+                if self._is_stopped:
+                    cv2.putText(debug_img, "STOPPED", (10, 180), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                
+                # Добавляем информацию о состоянии поворота
+                if self._is_turning:
+                    cv2.putText(debug_img, f"TURNING {self._turn_direction}", (10, 450), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                
+                # Рисуем линию сканирования
+                cv2.line(debug_img, (0, hLevelLine), (persective_w, hLevelLine), (255, 0, 0), 2)
+                
+                # Рисуем края линий
+                cv2.line(debug_img, (int(yellow_edge), hLevelLine-30), (int(yellow_edge), hLevelLine+30), 
+                        (0, 255, 255), 5)  # Желтая линия
+                cv2.line(debug_img, (int(white_edge), hLevelLine-30), (int(white_edge), hLevelLine+30), 
+                        (255, 255, 255), 5)  # Белая линия
+                
+                # Рисуем центры
+                center_crds = (int(image_center), hLevelLine)
+                lines_center_crds = (int(road_center), hLevelLine)
+                
+                cv2.circle(debug_img, center_crds, 8, (0, 255, 0), -1)  # Центр изображения - зеленый
+                if self.point_status:
+                    cv2.circle(debug_img, lines_center_crds, 8, (0, 0, 255), -1)  # Центр дороги - красный
+                else:
+                    cv2.circle(debug_img, lines_center_crds, 8, (100, 100, 100), -1)  # Центр дороги - серый
+                
+                # Рисуем линию между центрами
+                cv2.line(debug_img, center_crds, lines_center_crds, (255, 0, 255), 3)
+                
+                # Отображаем информацию
+                cv2.putText(debug_img, f"Error: {error:.1f}", (10, 30), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                cv2.putText(debug_img, f"Yellow: {yellow_edge:.0f}", (10, 60), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-            
-            # Рисуем линию сканирования
-            cv2.line(debug_img, (0, hLevelLine), (persective_w, hLevelLine), (255, 0, 0), 2)
-            
-            # Рисуем края линий
-            cv2.line(debug_img, (int(yellow_edge), hLevelLine-30), (int(yellow_edge), hLevelLine+30), 
-                    (0, 255, 255), 5)  # Желтая линия
-            cv2.line(debug_img, (int(white_edge), hLevelLine-30), (int(white_edge), hLevelLine+30), 
-                    (255, 255, 255), 5)  # Белая линия
-            
-            # Рисуем центры
-            center_crds = (int(image_center), hLevelLine)
-            lines_center_crds = (int(road_center), hLevelLine)
-            
-            cv2.circle(debug_img, center_crds, 8, (0, 255, 0), -1)  # Центр изображения - зеленый
-            if self.point_status:
-                cv2.circle(debug_img, lines_center_crds, 8, (0, 0, 255), -1)  # Центр дороги - красный
-            else:
-                cv2.circle(debug_img, lines_center_crds, 8, (100, 100, 100), -1)  # Центр дороги - серый
-            
-            # Рисуем линию между центрами
-            cv2.line(debug_img, center_crds, lines_center_crds, (255, 0, 255), 3)
-            
-            # Отображаем информацию
-            cv2.putText(debug_img, f"Error: {error:.1f}", (10, 30), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-            cv2.putText(debug_img, f"Yellow: {yellow_edge:.0f}", (10, 60), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-            cv2.putText(debug_img, f"White: {white_edge:.0f}", (10, 90), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-            cv2.putText(debug_img, f"Road Center: {road_center:.0f}", (10, 120), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-            cv2.putText(debug_img, f"Status: {'OK' if self.point_status else 'LOST'}", (10, 150), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0) if self.point_status else (0, 0, 255), 2)
-            cv2.putText(debug_img, f"Task Level: {self.TASK_LEVEL}", (10, 210), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            cv2.putText(debug_img, f"Main Line: {self.MAIN_LINE}", (10, 240), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            cv2.putText(debug_img, f"Angle: {angle:.2f} rad", (10, 270), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            cv2.putText(debug_img, f"At Intersection: {'YES' if is_at_intersection else 'NO'}", (10, 300), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            cv2.putText(debug_img, f"Ignore Stop: {self._ignore_stop_sign}", (10, 330), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            cv2.putText(debug_img, f"Dir Determined: {self._direction_determined}", (10, 360), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            cv2.putText(debug_img, f"Turning: {'YES' if self._is_turning else 'NO'}", (10, 420), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            cv2.putText(debug_img, f"Turn Dir: {self._turn_direction if self._turn_direction else 'NONE'}", (10, 450), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            
-            cv2.imshow("Road Following Debug", debug_img)
-            cv2.waitKey(1)
+                cv2.putText(debug_img, f"White: {white_edge:.0f}", (10, 90), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                cv2.putText(debug_img, f"Road Center: {road_center:.0f}", (10, 120), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+                cv2.putText(debug_img, f"Status: {'OK' if self.point_status else 'LOST'}", (10, 150), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0) if self.point_status else (0, 0, 255), 2)
+                cv2.putText(debug_img, f"Task Level: {self.TASK_LEVEL}", (10, 210), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                cv2.putText(debug_img, f"Main Line: {self.MAIN_LINE}", (10, 240), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                cv2.putText(debug_img, f"Angle: {angle:.2f} rad", (10, 270), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                cv2.putText(debug_img, f"At Intersection: {'YES' if is_at_intersection else 'NO'}", (10, 300), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                cv2.putText(debug_img, f"Line Search: {'YES' if self._line_search_mode else 'NO'}", (10, 330), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0) if self._line_search_mode else (255, 255, 0), 2)
+                
+                cv2.imshow("Road Following Debug", debug_img)
+                cv2.waitKey(1)
 
-        # 16. Публикуем команды управления
-        if self.STATUS_CAR == 1 and not self._is_stopped and not self._is_turning:
-            self._robot_cmd_vel_pub.publish(self.twist)
+            # 17. Публикуем команды управления
+            if self.STATUS_CAR == 1 and not self._is_stopped and not self._is_turning and not self._line_search_mode:
+                self._robot_cmd_vel_pub.publish(self.twist)
+
+
+
+    # ДОБАВЛЯЕМ: метод для поиска линии после поворота
+    def _search_for_line(self, perspective):
+        """Поиск линии после поворота"""
+        if not self._line_search_mode:
+            return False
+        
+        current_time = time.time()
+        elapsed = current_time - self._search_start_time
+        
+        # Проверяем, не превысили ли время поиска
+        if elapsed > self._search_duration:
+            log_info(self, "[ПОИСК] Превышено время поиска линии, прекращаю поиск")
+            self._line_search_mode = False
+            self._lines_found = True  # Принудительно продолжаем
+            return False
+        
+        # Пытаемся найти линии на всем изображении (не только на средней линии)
+        h, w, _ = perspective.shape
+        
+        # Ищем линии на разных высотах для лучшего обнаружения
+        search_heights = [h // 4, h // 2, 3 * h // 4]
+        yellow_edges = []
+        white_edges = []
+        
+        for search_h in search_heights:
+            yellow_edge = self._find_yellow_line(perspective, search_h)
+            white_edge = self._find_white_line(perspective, search_h)
+            
+            # Проверяем валидность найденных краев
+            if yellow_edge < w and white_edge > 0 and white_edge > yellow_edge + 50:
+                yellow_edges.append(yellow_edge)
+                white_edges.append(white_edge)
+        
+        # Если нашли достаточно хороших значений
+        if len(yellow_edges) >= 2 and len(white_edges) >= 2:
+            # Используем медиану для устойчивости
+            median_yellow = np.median(yellow_edges)
+            median_white = np.median(white_edges)
+            
+            # Проверяем, что линии находятся в разумных пределах
+            if 50 < median_yellow < w - 100 and 100 < median_white < w - 50 and median_white > median_yellow + 100:
+                self._consecutive_detections += 1
+                self._consecutive_misses = 0
+                
+                log_info(self, f"[ПОИСК] Найдены линии: желтая={median_yellow:.0f}, белая={median_white:.0f}, детекций={self._consecutive_detections}")
+                
+                # Если достаточно последовательных обнаружений, считаем линии найденными
+                if self._consecutive_detections >= self._min_detections:
+                    log_info(self, f"[ПОИСК] Линии подтверждены, прекращаю поиск")
+                    self._line_search_mode = False
+                    self._lines_found = True
+                    
+                    # Обновляем историю с найденными значениями
+                    self._yellow_right_edge.append(median_yellow)
+                    self._white_left_edge.append(median_white)
+                    self.point_status = True
+                    
+                    return True
+            else:
+                self._consecutive_detections = 0
+                self._consecutive_misses += 1
+        else:
+            self._consecutive_detections = 0
+            self._consecutive_misses += 1
+        
+        # Визуализация поиска
+        if INFO_LEVEL:
+            search_img = np.zeros((200, 400, 3), dtype=np.uint8)
+            remaining = self._search_duration - elapsed
+            cv2.putText(search_img, f"SEARCHING LINE", (50, 80), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 165, 0), 2)
+            cv2.putText(search_img, f"Dir: {self._search_direction}", (50, 110), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0), 2)
+            cv2.putText(search_img, f"Detections: {self._consecutive_detections}/{self._min_detections}", (50, 140), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 165, 0), 2)
+            cv2.putText(search_img, f"Remaining: {remaining:.1f}s", (50, 170), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0), 2)
+            cv2.imshow("Line Search Status", search_img)
+            cv2.waitKey(1)
+        
+        # Продолжаем движение в направлении поиска
+        self.twist.linear.x = self._turn_linear_speed * 0.5  # Медленнее во время поиска
+        
+        if self._search_direction == "LEFT":
+            self.twist.angular.z = self._search_angular_speed
+        elif self._search_direction == "RIGHT":
+            self.twist.angular.z = -self._search_angular_speed
+        
+        self._robot_cmd_vel_pub.publish(self.twist)
+        
+        return True
+
+    # ДОБАВЛЯЕМ: метод для запуска поиска линии
+    def _start_line_search(self, direction):
+        """Начинает поиск линии после поворота"""
+        log_info(self, f"[ПОИСК] Начинаю поиск линии в направлении {direction}")
+        self._line_search_mode = True
+        self._search_start_time = time.time()
+        self._search_direction = direction
+        self._lines_found = False
+        self._consecutive_detections = 0
+        self._consecutive_misses = 0
+        
+        # Очищаем историю для нового поиска
+        self._yellow_right_edge.clear()
+        self._white_left_edge.clear()
 
         # Функция выполнения поворота
     def _execute_turn(self):
@@ -639,7 +796,7 @@ class Follow_Trace_Node(Node):
         if self._turn_direction == "LEFT":
             self.twist.angular.z = self._turn_angular_speed  # Поворот налево
         elif self._turn_direction == "RIGHT":
-            self.twist.angular.z = -self._turn_angular_speed  # Поворот направо
+            self.twist.angular.z = -self._turn_angular_speed_RIGHT  # Поворот направо
         
         # Публикуем команды
         self._robot_cmd_vel_pub.publish(self.twist)
@@ -655,9 +812,13 @@ class Follow_Trace_Node(Node):
             self.twist.angular.z = 0.0
             self._robot_cmd_vel_pub.publish(self.twist)
             
-            # Завершаем перекресток
-            self.TASK_LEVEL = 2
-            log_info(self, "[ПЕРЕКРЕСТОК] Завершен, продолжаю движение")
+            # НАЧИНАЕМ ПОИСК ЛИНИИ ПОСЛЕ ПОВОРОТА
+            self._start_line_search(self._turn_direction)
+            
+            time.sleep(0.5)  # Короткая пауза перед началом поиска
+            
+            # Завершаем перекресток только после успешного поиска линии
+            log_info(self, "[ПЕРЕКРЕСТОК] Поиск линии после поворота...")
             
             if INFO_LEVEL:
                 cv2.destroyWindow("Turn Status")
@@ -689,6 +850,7 @@ class Follow_Trace_Node(Node):
         else:  # RIGHT
             self._yellow_right_edge.append(100)   # Желтая слева
             self._white_left_edge.append(500)     # Белая справа
+
 
 
 def main():
