@@ -1,0 +1,24 @@
+[1.297s] Invoking command in '/home/natalia/Documents/STUDING/ROS_bit_pel/autorace_detect': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autorace_detect build --build-base /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build install --record /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/install.log --single-version-externally-managed install_data
+[1.635s] running egg_info
+[1.660s] writing ../build/autorace_detect/autorace_detect.egg-info/PKG-INFO
+[1.661s] writing dependency_links to ../build/autorace_detect/autorace_detect.egg-info/dependency_links.txt
+[1.661s] writing entry points to ../build/autorace_detect/autorace_detect.egg-info/entry_points.txt
+[1.662s] writing requirements to ../build/autorace_detect/autorace_detect.egg-info/requires.txt
+[1.662s] writing top-level names to ../build/autorace_detect/autorace_detect.egg-info/top_level.txt
+[1.705s] reading manifest file '../build/autorace_detect/autorace_detect.egg-info/SOURCES.txt'
+[1.706s] writing manifest file '../build/autorace_detect/autorace_detect.egg-info/SOURCES.txt'
+[1.707s] running build
+[1.707s] running build_py
+[1.707s] copying module/traffic_direction.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module
+[1.708s] running install
+[1.715s] running install_lib
+[1.734s] copying /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build/lib/module/traffic_direction.py -> /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module
+[1.735s] byte-compiling /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/module/traffic_direction.py to traffic_direction.cpython-312.pyc
+[1.739s] running install_data
+[1.739s] running install_egg_info
+[1.763s] removing '/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/autorace_detect-0.0.0-py3.12.egg-info' (and everything under it)
+[1.763s] Copying ../build/autorace_detect/autorace_detect.egg-info to /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages/autorace_detect-0.0.0-py3.12.egg-info
+[1.764s] running install_scripts
+[1.918s] Installing follow_path script to /home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/autorace_detect
+[1.918s] writing list of installed files to '/home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/install.log'
+[1.964s] Invoked command in '/home/natalia/Documents/STUDING/ROS_bit_pel/autorace_detect' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/natalia/Documents/STUDING/ROS_bit_pel/install/autorace_detect/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autorace_detect build --build-base /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/build install --record /home/natalia/Documents/STUDING/ROS_bit_pel/build/autorace_detect/install.log --single-version-externally-managed install_data

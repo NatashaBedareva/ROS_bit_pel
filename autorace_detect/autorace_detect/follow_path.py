@@ -186,18 +186,17 @@ class Follow_Trace_Node(Node):
             log_info(self, "[СТОП] Определил направление: ПОВОРОТ НАЛЕВО")
             self.MAIN_LINE = "YELLOW"
             self._direction_determined = True
+            self._handle_stop()
         elif direction == "RIGHT":
             log_info(self, "[СТОП] Определил направление: ПОВОРОТ НАПРАВО")
             self.MAIN_LINE = "WHITE"
             self._direction_determined = True
-        elif direction == "STRAIGHT":
-            log_info(self, "[СТОП] Определил направление: ПРЯМО")
-            self.MAIN_LINE = "WHITE"
-            self._direction_determined = True
+            self._handle_stop()
         else:
             log_info(self, "[СТОП] Направление не определено, буду поворачивать налево")
             self.MAIN_LINE = "YELLOW"
             self._direction_determined = True
+            self._handle_stop()
 
     # Обратный вызов для получения данных о положении
     def pose_callback(self, data):

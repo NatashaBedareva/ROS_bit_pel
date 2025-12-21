@@ -145,13 +145,13 @@ def extract_sign_region(img):
     
     return sign_mask, (x, y, w, h)
 
-# Анализ направления стрелки на знаке
 def analyze_arrow_direction(img):
     """
     Анализирует направление стрелки на знаке.
-    Возвращает: "LEFT", "RIGHT", "STRAIGHT", или None
+    Темно-серая/белая стрелка на синем фоне.
+    Возвращает: "LEFT", "RIGHT", или None
     """
-    # Сначала выделяем знак
+    # Сначала выделяем синий знак
     sign_mask, bbox = extract_sign_region(img)
     
     if sign_mask is None or bbox is None:
@@ -159,36 +159,84 @@ def analyze_arrow_direction(img):
     
     x, y, w, h = bbox
     
-    # Создаем копию изображения для анализа
-    analysis_img = img.copy()
+    # Вырезаем область знака из исходного изображения
+    sign_roi = img[y:y+h, x:x+w].copy()
     
-    # Разделяем знак на три вертикальные зоны
-    zone_width = w // 3
-    left_zone = sign_mask[y:y+h, x:x+zone_width]
-    center_zone = sign_mask[y:y+h, x+zone_width:x+2*zone_width]
-    right_zone = sign_mask[y:y+h, x+2*zone_width:x+w]
+    # Преобразуем в RGB для более простой работы
+    # Ищем серый цвет: R ≈ G ≈ B, и значения около 93
+    rgb_roi = sign_roi.copy()
     
-    # Считаем синие пиксели в каждой зоне
-    left_pixels = cv2.countNonZero(left_zone)
-    center_pixels = cv2.countNonZero(center_zone)
-    right_pixels = cv2.countNonZero(right_zone)
+    # Вычисляем разницу между каналами
+    r_channel = rgb_roi[:, :, 2].astype(np.float32)
+    g_channel = rgb_roi[:, :, 1].astype(np.float32)
+    b_channel = rgb_roi[:, :, 0].astype(np.float32)
     
-    # Разделяем знак на две горизонтальные зоны (верх/низ)
-    zone_height = h // 2
-    top_zone = sign_mask[y:y+zone_height, x:x+w]
-    bottom_zone = sign_mask[y+zone_height:y+h, x:x+w]
+    # Маска для серого цвета: все каналы примерно равны
+    diff_rg = np.abs(r_channel - g_channel)
+    diff_rb = np.abs(r_channel - b_channel)
+    diff_gb = np.abs(g_channel - b_channel)
     
-    top_pixels = cv2.countNonZero(top_zone)
-    bottom_pixels = cv2.countNonZero(bottom_zone)
+    # Серый цвет: разница между каналами не более 30
+    gray_mask1 = (diff_rg < 30) & (diff_rb < 30) & (diff_gb < 30)
     
-    # Анализируем форму стрелки
-    # Для стрелки влево: больше пикселей в правой части
-    # Для стрелки вправо: больше пикселей в левой части
-    # Для стрелки прямо: симметричное распределение
+    # Также проверяем яркость: R+G+B примерно 93*3 ≈ 280
+    brightness = r_channel + g_channel + b_channel
+    gray_mask2 = (brightness > 200) & (brightness < 350)  # Примерно 93 ± 50
     
-    # Вычисляем соотношения
-    left_right_ratio = left_pixels / right_pixels if right_pixels > 0 else 100
-    right_left_ratio = right_pixels / left_pixels if left_pixels > 0 else 100
+    # Объединяем маски
+    gray_mask = gray_mask1 & gray_mask2
+    
+    # Преобразуем в uint8 для OpenCV
+    gray_mask_uint8 = gray_mask.astype(np.uint8) * 255
+    
+    # Применяем маску знака (только внутри синей области)
+    sign_binary = sign_mask[y:y+h, x:x+w]  # Уже нужный срез
+    gray_in_sign = cv2.bitwise_and(gray_mask_uint8, sign_binary)
+    
+    # Морфологические операции для очистки маски стрелки
+    kernel = np.ones((3, 3), np.uint8)
+    gray_in_sign = cv2.morphologyEx(gray_in_sign, cv2.MORPH_OPEN, kernel)
+    gray_in_sign = cv2.morphologyEx(gray_in_sign, cv2.MORPH_CLOSE, kernel)
+    
+    # Проверяем, достаточно ли серых пикселей для стрелки
+    gray_pixels = cv2.countNonZero(gray_in_sign)
+    total_sign_pixels = cv2.countNonZero(sign_binary)
+    
+    if total_sign_pixels == 0 or gray_pixels < 20:  # Минимум 20 серых пикселей
+        return None
+    
+    # Альтернативный подход: использовать HSV и искать цвета с низкой насыщенностью
+    hsv_roi = cv2.cvtColor(sign_roi, cv2.COLOR_BGR2HSV)
+    
+    # Для серого/белого: низкая насыщенность (S < 50), средняя/высокая яркость
+    lower_gray = np.array([0, 0, 70])  # H: любой, S: низкая, V: средняя
+    upper_gray = np.array([180, 50, 200])  # H: любой, S: низкая, V: высокая
+    
+    hsv_gray_mask = cv2.inRange(hsv_roi, lower_gray, upper_gray)
+    hsv_gray_in_sign = cv2.bitwise_and(hsv_gray_mask, sign_binary)
+    
+    # Объединяем оба метода для лучшего результата
+    combined_gray = cv2.bitwise_or(gray_in_sign, hsv_gray_in_sign)
+    
+    # ПРОСТОЙ ПОДХОД: делим знак пополам и смотрим, где больше серого
+    middle_x = w // 2
+    
+    # Левая половина (ИСПРАВЛЕНО: правильно определяем границы)
+    left_half = combined_gray[:, :middle_x]  # От 0 до middle_x
+    # Правая половина  
+    right_half = combined_gray[:, middle_x:]  # От middle_x до конца
+    
+    # Считаем серые пиксели в каждой половине
+    left_pixels = cv2.countNonZero(left_half)
+    right_pixels = cv2.countNonZero(right_half)
+    
+    # Вычисляем соотношение
+    total_gray = left_pixels + right_pixels
+    if total_gray == 0:
+        return None
+    
+    left_ratio = left_pixels / total_gray
+    right_ratio = right_pixels / total_gray
     
     # Визуализация для отладки
     if INFO_LEVEL:
@@ -197,55 +245,114 @@ def analyze_arrow_direction(img):
         # Рисуем ограничивающий прямоугольник знака
         cv2.rectangle(debug_img, (x, y), (x+w, y+h), (0, 255, 0), 2)
         
-        # Рисуем разделительные линии
-        cv2.line(debug_img, (x+zone_width, y), (x+zone_width, y+h), (255, 0, 0), 1)
-        cv2.line(debug_img, (x+2*zone_width, y), (x+2*zone_width, y+h), (255, 0, 0), 1)
-        cv2.line(debug_img, (x, y+zone_height), (x+w, y+zone_height), (255, 255, 0), 1)
+        # Рисуем вертикальную линию посередине
+        cv2.line(debug_img, (x+middle_x, y), (x+middle_x, y+h), (255, 0, 0), 2)
+        
+        # Показываем маску серой стрелки на изображении
+        overlay_roi = debug_img[y:y+h, x:x+w]
+        # Создаем цветную версию маски для наложения
+        colored_gray = cv2.cvtColor(combined_gray, cv2.COLOR_GRAY2BGR)
+        colored_gray[combined_gray > 0] = [200, 200, 200]  # Серый цвет
+        # Накладываем с прозрачностью
+        cv2.addWeighted(colored_gray, 0.5, overlay_roi, 0.5, 0, overlay_roi)
         
         # Отображаем информацию
-        cv2.putText(debug_img, f"Left: {left_pixels}", (x, y-30), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-        cv2.putText(debug_img, f"Center: {center_pixels}", (x+zone_width, y-30), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-        cv2.putText(debug_img, f"Right: {right_pixels}", (x+2*zone_width, y-30), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        cv2.putText(debug_img, f"Gray: {gray_pixels} | Total: {total_gray}", 
+                   (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        cv2.putText(debug_img, f"Left: {left_pixels} ({left_ratio:.1%})", (10, 60), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        cv2.putText(debug_img, f"Right: {right_pixels} ({right_ratio:.1%})", (10, 90), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        
+        # Показываем средний цвет в области знака для отладки
+        if gray_pixels > 0:
+            # Получаем координаты серых пикселей
+            gray_coords = np.where(combined_gray > 0)
+            if len(gray_coords[0]) > 0:
+                avg_color = np.mean(sign_roi[gray_coords], axis=0)
+                cv2.putText(debug_img, f"Avg color: B:{avg_color[0]:.0f} G:{avg_color[1]:.0f} R:{avg_color[2]:.0f}", 
+                           (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         
         # Определяем направление
         direction = None
         color = (128, 128, 128)
+        direction_text = "ARROW: UNKNOWN"
         
-        if right_pixels > left_pixels * 1.5 and right_pixels > center_pixels:
-            direction = "LEFT"  # Стрелка влево: пиксели справа (острие стрелки)
-            color = (0, 255, 0)
+        # Простая логика: где больше серого, туда и поворачивать
+        threshold_ratio = 1.3  # На 30% больше
+        
+        if left_pixels > right_pixels * threshold_ratio:
+            direction = "LEFT"
+            color = (0, 255, 0)  # Зеленый
             direction_text = "ARROW: TURN LEFT"
-        elif left_pixels > right_pixels * 1.5 and left_pixels > center_pixels:
-            direction = "RIGHT"  # Стрелка вправо: пиксели слева (острие стрелки)
-            color = (0, 0, 255)
+        elif right_pixels > left_pixels * threshold_ratio:
+            direction = "RIGHT"
+            color = (0, 0, 255)  # Красный
             direction_text = "ARROW: TURN RIGHT"
-        elif center_pixels > left_pixels and center_pixels > right_pixels:
-            direction = "STRAIGHT"  # Стрелка прямо: пиксели в центре
-            color = (255, 255, 0)
-            direction_text = "ARROW: GO STRAIGHT"
         else:
-            direction_text = "ARROW: UNKNOWN"
+            # Если разница небольшая, но есть явное преимущество
+            if left_pixels > right_pixels + 15:  # Разница хотя бы 15 пикселей
+                direction = "LEFT"
+                color = (0, 255, 0)
+                direction_text = "ARROW: TURN LEFT (slight)"
+            elif right_pixels > left_pixels + 15:
+                direction = "RIGHT"
+                color = (0, 0, 255)
+                direction_text = "ARROW: TURN RIGHT (slight)"
         
-        cv2.putText(debug_img, direction_text, (x, y-60), 
+        cv2.putText(debug_img, direction_text, (x, y-20), 
                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
         
+        # Также показываем только знак с выделенной стрелкой - ИСПРАВЛЕННАЯ ЧАСТЬ
+        sign_debug = sign_roi.copy()
+        
+        # Создаем цветные маски для левой и правой половин
+        left_colored = np.zeros_like(sign_roi)
+        right_colored = np.zeros_like(sign_roi)
+        
+        # Получаем индексы пикселей в каждой половине
+        left_indices = np.where(left_half > 0)
+        right_indices = np.where(right_half > 0)
+        
+        # Раскрашиваем пиксели
+        if len(left_indices[0]) > 0:
+            # Преобразуем индексы для правой половины (учитываем смещение)
+            left_rows = left_indices[0]
+            left_cols = left_indices[1]
+            sign_debug[left_rows, left_cols] = [0, 255, 0]  # Зеленый
+        
+        if len(right_indices[0]) > 0:
+            right_rows = right_indices[0]
+            right_cols = right_indices[1]
+            # Для правой половины нужно добавить middle_x к столбцам
+            sign_debug[right_rows, right_cols + middle_x] = [0, 0, 255]  # Красный
+        
+        # Рисуем линию посередине на знаке
+        cv2.line(sign_debug, (middle_x, 0), (middle_x, h), (255, 255, 255), 2)
+        
         cv2.imshow("Arrow Direction Analysis", debug_img)
+        cv2.imshow("Sign with Gray Arrow", sign_debug)
         cv2.waitKey(1)
     
-    # Определяем направление стрелки
-    # Логика: стрелка указывает НАПРАВО, если острие справа (больше синего слева)
-    #         стрелка указывает НАЛЕВО, если острие слева (больше синего справа)
-    if right_pixels > left_pixels * 1.5 and right_pixels > center_pixels:
-        return "LEFT"  # Острие справа → стрелка указывает налево
-    elif left_pixels > right_pixels * 1.5 and left_pixels > center_pixels:
-        return "RIGHT"  # Острие слева → стрелка указывает направо
-    elif center_pixels > left_pixels and center_pixels > right_pixels:
-        return "STRAIGHT"  # Стрелка прямо
+    # ПРОСТАЯ ЛОГИКА: где больше серого, туда и поворачивать
+    # Если больше серого в ЛЕВОЙ половине → поворот НАЛЕВО
+    # Если больше серого в ПРАВОЙ половине → поворот НАПРАВО
+    
+    # Пороговое значение
+    threshold_ratio = 1.3  # На 30% больше
+    
+    if left_pixels > right_pixels * threshold_ratio:
+        return "RIGHT"  # Больше серого слева → поворачиваем налево
+    elif right_pixels > left_pixels * threshold_ratio:
+        return "LEFT"  # Больше серого справа → поворачиваем направо
     else:
-        return None
+        # Если разница небольшая, но есть явное преимущество
+        if left_pixels > right_pixels + 15:  # Разница хотя бы 15 пикселей
+            return "RIGHT"
+        elif right_pixels > left_pixels + 15:
+            return "LEFT"
+    
+    return None
 
 # Основная функция проверки направления
 def check_direction(follow_trace, img, is_at_intersection=False, ignore_stop_sign=False):
@@ -303,9 +410,6 @@ def check_direction(follow_trace, img, is_at_intersection=False, ignore_stop_sig
         elif direction == "RIGHT":
             log_info(follow_trace, "[Перекресток] Стрелка указывает: ПОВОРОТ НАПРАВО")
             follow_trace.MAIN_LINE = "WHITE"
-        elif direction == "STRAIGHT":
-            log_info(follow_trace, "[Перекресток] Стрелка указывает: ПРЯМО")
-            follow_trace.MAIN_LINE = "WHITE"  # По умолчанию едем по белой линии
         else:
             # Если не определили направление стрелки, используем старую логику
             log_info(follow_trace, "[Перекресток] Направление не определено, поворачиваю налево")
