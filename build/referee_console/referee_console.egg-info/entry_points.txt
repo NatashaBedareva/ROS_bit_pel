@@ -1,2 +1,0 @@
-[console_scripts]
-mission_autorace_2025_referee = referee_console.mission_autorace_2025_referee:main
