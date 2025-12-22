@@ -30,11 +30,11 @@ def check_stop_sign(img):
     # Анализируем распределение синих пикселей
     height, width = blue_mask.shape[:2]
     
-    # ВЕРХНЯЯ область для обнаружения знаков - СМЕЩЕНА ВЛЕВО
+
     roi_height = height // 4
     roi_width = width // 3
     roi_y = height // 8
-    roi_x = width // 4  # СМЕЩАЕМ ВЛЕВО: было (width - roi_width) // 2, стало width // 4
+    roi_x = width // 4  
     
     # Проверяем границы
     if roi_x + roi_width > width:
@@ -303,10 +303,7 @@ def analyze_arrow_direction(img):
         cv2.imshow("Sign with Gray Arrow", sign_debug)
         cv2.waitKey(1)
     
-    # ПРОСТАЯ ЛОГИКА: где больше серого, туда и поворачивать
-    # Если больше серого в ЛЕВОЙ половине → поворот НАЛЕВО
-    # Если больше серого в ПРАВОЙ половине → поворот НАПРАВО
-    
+
     # Пороговое значение
     threshold_ratio = 1.3  # На 30% больше
     
@@ -335,9 +332,7 @@ def check_direction(follow_trace, img, is_at_intersection=False, ignore_stop_sig
         ignore_stop_sign: если True, игнорируем проверку знака STOP
     """
     angle = follow_trace.get_angle()
-    
-    # Показываем, что видит робот перед собой
-    
+
     
     # 1. Проверяем знак остановки (если на перекрестке и не игнорируем)
     if is_at_intersection and follow_trace.TASK_LEVEL == 1 and not ignore_stop_sign:

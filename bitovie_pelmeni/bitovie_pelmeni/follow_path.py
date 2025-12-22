@@ -53,7 +53,6 @@ class Follow_Trace_Node(Node):
     def __init__(self, linear_speed=MAX_LINIEAR_SPEED):
         super().__init__("Follow_Trace_Node")
 
-        # статус центровой точки дороги (True - актуально, False - устарела)
         self.point_status = True
         
         self._robot_Ccamera_sub = self.create_subscription(Image, "/color/image", self._callback_Ccamera, 3)
@@ -92,16 +91,14 @@ class Follow_Trace_Node(Node):
         self.image_width = 0
         self.image_height = 0
 
-        # ДОБАВЛЯЕМ: состояние остановки
         self._is_stopped = False
         self._stop_start_time = 0
-        self._stop_duration = 3.0  # секунды остановки
-        self._stop_reason = ""  # причина остановки
+        self._stop_duration = 3.0  
+        self._stop_reason = ""  
         
-        # ДОБАВЛЯЕМ: флаги для управления перекрестком
         self._stop_sign_detected = False
         self._direction_determined = False
-        self._ignore_stop_sign = False  # Игнорировать знак STOP после первой остановки
+        self._ignore_stop_sign = False  
         
 
         self._last_check_time = 0
@@ -133,8 +130,7 @@ class Follow_Trace_Node(Node):
 
         self._consecutive_detections = 0
         self._consecutive_misses = 0
-        self._min_detections = 5  # минимальное количество последовательных обнаружений для подтверждения линии
-
+        self._min_detections = 5 
 
 
     def _stop_robot(self, reason="STOP_SIGN"):
