@@ -11,7 +11,7 @@ ros2 launch robot_bringup autorace_2025.launch.py
 ```
 Терминал 2:
 ```bash
-ros2 launch bitovie_pelmeni bitovie_pelmeni.launch.py (https://bitovie_pelmeni.launch.py/)
+ros2 launch bitovie_pelmeni bitovie_pelmeni.launch.py
 ```
 Терминал 3:
 ```bash
