@@ -635,7 +635,7 @@ class Follow_Trace_Node(Node):
                 self._robot_cmd_vel_pub.publish(self.twist)
 
 
-            if self.TASK_LEVEL == 2 and (time.time() - self.START_TIME) > 80:
+            if self.TASK_LEVEL == 2 and self.pose.pose.pose.position.y >= 2.3:
                 log_info(self, f"[КОНУСЫ] Начинаем объезд конусов")
                 self.TASK_LEVEL = 3
                 
