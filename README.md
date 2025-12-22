@@ -1,5 +1,23 @@
 # AutoRace. Решение Битовые пельмени
 
+## Запуск
+1. Скачать репозиторий ROS_bit_pel
+2. Скачать репозиторий my_robot
+3. Запустить решение
+Терминал 1:
+```bash
+ros2 launch robot_bringup autorace_2025.launch.py
+```
+Терминал 2:
+```bash
+ros2 launch bitovie_pelmeni bitovie_pelmeni.launch.py (https://bitovie_pelmeni.launch.py/)
+```
+Терминал 3:
+```bash
+ros2 run referee_console mission_autorace_2025_referee
+```
+
+
 ## Основные использованные пакеты ROS 2
 1. **rclpy** - Python клиентская библиотека ROS 2
 2. **std_msgs** - Стандартные типы сообщений ROS (Empty, String)
@@ -26,7 +44,7 @@
 - **Механизм восстановления** при потере линии слежения
 
 #### 2. Обработка компьютерного зрения
-
+<img width="638" height="572" alt="image" src="https://github.com/user-attachments/assets/b0e99b59-3e65-48ce-a695-5312a7a28301" />
 ##### Детекция линий дорожной разметки:
 - **Метод `_find_yellow_line`** - обнаружение желтой линии с использованием:
   - Преобразования в HSV цветовое пространство
@@ -50,6 +68,7 @@
 - **Визуализация состояния** остановки
 
 #### 4. Модуль анализа дорожных знаков (traffic_direction.py)
+<img width="243" height="154" alt="image" src="https://github.com/user-attachments/assets/664ac9f5-4690-48d4-afa8-ecc438f1b9c7" />
 
 ##### Детекция синих дорожных знаков:
 - **Метод `check_blue_color`** - выделение синего цвета с использованием HSV диапазонов
