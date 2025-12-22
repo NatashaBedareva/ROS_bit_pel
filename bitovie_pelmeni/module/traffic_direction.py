@@ -67,38 +67,7 @@ def check_stop_sign(img):
     # Пороги для знака остановки
     stop_threshold_pixels = 300
     stop_threshold_ratio = 0.15
-    
-    if INFO_LEVEL:
-        debug_img = img.copy()
-        # Рисуем ROI область (зеленая рамка) - СМЕЩЕНА ВЛЕВО
-        cv2.rectangle(debug_img, (roi_x, roi_y), (roi_x+roi_width, roi_y+roi_height), (0, 255, 0), 2)
-        
-        if circles_detected:
-            cv2.rectangle(debug_img, (roi_x, roi_y), (roi_x+roi_width, roi_y+roi_height), (0, 0, 255), 3)
-        
-        cv2.putText(debug_img, f"Blue in ROI: {blue_pixels}", (10, 30), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        cv2.putText(debug_img, f"ROI Position: ({roi_x},{roi_y})", (10, 60), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        
-        blue_mask_colored = cv2.cvtColor(blue_mask, cv2.COLOR_GRAY2BGR)
-        blue_mask_colored[:, :, 0] = 255
-        blue_mask_colored[:, :, 1] = 0
-        blue_mask_colored[:, :, 2] = 0
-        
-        alpha = 0.3
-        overlay = cv2.addWeighted(debug_img, 1, blue_mask_colored, alpha, 0)
-        
-        is_stop_sign = (blue_pixels > stop_threshold_pixels and 
-                       blue_ratio > stop_threshold_ratio and
-                       circles_detected)
-        
-        if is_stop_sign:
-            cv2.putText(overlay, "STOP SIGN DETECTED!", (width//2 - 150, 50), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
-        
-        cv2.imshow("Stop Sign Detection", overlay)
-        cv2.waitKey(1)
+
     
     return (blue_pixels > stop_threshold_pixels and 
             blue_ratio > stop_threshold_ratio and
@@ -368,30 +337,7 @@ def check_direction(follow_trace, img, is_at_intersection=False, ignore_stop_sig
     angle = follow_trace.get_angle()
     
     # Показываем, что видит робот перед собой
-    if INFO_LEVEL:
-        display_img = img.copy()
-        height, width = display_img.shape[:2]
-        
-        # Линия для анализа направления - СМЕЩЕНА ВЛЕВО
-        analysis_line_x = 200  # БЫЛО 300, СМЕЩАЕМ ВЛЕВО
-        cv2.line(display_img, (width//2, 0), (width//2, height), (0, 255, 0), 1)
-        cv2.line(display_img, (analysis_line_x, 0), (analysis_line_x, height), (0, 200, 0), 1)
-        
-        cv2.putText(display_img, f"Angle: {angle:.2f} rad", (10, 30), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        cv2.putText(display_img, f"Task Level: {follow_trace.TASK_LEVEL}", (10, 60), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        cv2.putText(display_img, f"Analysis Line: x={analysis_line_x}", (10, 90), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        cv2.putText(display_img, f"Ignore Stop: {ignore_stop_sign}", (10, 120), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        
-        if abs(angle) >= 2.80 and follow_trace.TASK_LEVEL == 1:
-            cv2.putText(display_img, "AT INTERSECTION - ANALYZING", (10, 150), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-        
-        cv2.imshow("Robot Camera View", display_img)
-        cv2.waitKey(1)
+    
     
     # 1. Проверяем знак остановки (если на перекрестке и не игнорируем)
     if is_at_intersection and follow_trace.TASK_LEVEL == 1 and not ignore_stop_sign:

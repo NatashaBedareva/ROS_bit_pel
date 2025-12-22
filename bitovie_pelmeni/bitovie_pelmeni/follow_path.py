@@ -103,32 +103,34 @@ class Follow_Trace_Node(Node):
         self._direction_determined = False
         self._ignore_stop_sign = False  # Игнорировать знак STOP после первой остановки
         
-        # ДОБАВЛЯЕМ: время последней проверки
+
         self._last_check_time = 0
         self._check_interval = 0.2  # проверять каждые 0.2 секунды
 
-        # ДОБАВЛЯЕМ: состояние выполнения поворота
+
         self._is_turning = False
         self._turn_start_time = 0
         self._turn_duration = 1.5  # секунды поворота
         self._turn_direction = None  # "LEFT" или "RIGHT"
         self._turn_completed = False
         
-        # ДОБАВЛЯЕМ: временные переменные для поворота
+
         self._turn_angular_speed = 1.0  # радиан/сек для поворота
         self._turn_linear_speed = 0.3   # м/с во время поворота
 
         self._turn_angular_speed_RIGHT = 0.6  # радиан/сек для поворота НАПРАВО
         
-        # ДОБАВЛЯЕМ: состояние поиска линии после поворота
+
         self._line_search_mode = False
         self._search_start_time = 0
         self._search_duration = 2.0  # максимум 2 секунды поиска
         self._search_angular_speed = 0.4  # скорость поиска
         self._lines_found = False
         self._search_direction = None  # направление поиска
+
+        self.final = False
         
-        # ДОБАВЛЯЕМ: счетчики для определения качества обнаружения линии
+
         self._consecutive_detections = 0
         self._consecutive_misses = 0
         self._min_detections = 5  # минимальное количество последовательных обнаружений для подтверждения линии
@@ -147,16 +149,7 @@ class Follow_Trace_Node(Node):
         # Если это знак STOP, устанавливаем флаги
         if reason == "STOP_SIGN":
             self._stop_sign_detected = True
-        
-        # Визуализация остановки
-        if INFO_LEVEL:
-            stop_img = np.zeros((200, 400, 3), dtype=np.uint8)
-            cv2.putText(stop_img, f"STOPPED: {reason}", (30, 80), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-            cv2.putText(stop_img, f"Waiting {self._stop_duration}s", (60, 120), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-            cv2.imshow("Stop Status", stop_img)
-            cv2.waitKey(1)
+ 
 
     # Функция возобновления движения
     def _resume_robot(self):
@@ -175,17 +168,7 @@ class Follow_Trace_Node(Node):
         
         current_time = time.time()
         elapsed = current_time - self._stop_start_time
-        
-        # Обновляем таймер
-        if INFO_LEVEL and elapsed < self._stop_duration:
-            stop_img = np.zeros((200, 400, 3), dtype=np.uint8)
-            remaining = self._stop_duration - elapsed
-            cv2.putText(stop_img, f"STOPPED: {self._stop_reason}", (30, 80), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-            cv2.putText(stop_img, f"Resume in: {remaining:.1f}s", (60, 120), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-            cv2.imshow("Stop Status", stop_img)
-            cv2.waitKey(1)
+
         
         # Проверяем, прошло ли достаточно времени
         if elapsed >= self._stop_duration:
@@ -594,6 +577,7 @@ class Follow_Trace_Node(Node):
                 # Создаем изображение для отладки
                 debug_img = perspective.copy()
                 
+                
                 # Добавляем информацию о состоянии поиска
                 if self._line_search_mode:
                     cv2.putText(debug_img, "LINE SEARCH", (10, 390), 
@@ -646,15 +630,7 @@ class Follow_Trace_Node(Node):
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0) if self.point_status else (0, 0, 255), 2)
                 cv2.putText(debug_img, f"Task Level: {self.TASK_LEVEL}", (10, 210), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-                cv2.putText(debug_img, f"Main Line: {self.MAIN_LINE}", (10, 240), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-                cv2.putText(debug_img, f"Angle: {angle:.2f} rad", (10, 270), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-                cv2.putText(debug_img, f"At Intersection: {'YES' if is_at_intersection else 'NO'}", (10, 300), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-                cv2.putText(debug_img, f"Line Search: {'YES' if self._line_search_mode else 'NO'}", (10, 330), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0) if self._line_search_mode else (255, 255, 0), 2)
-                
+
                 cv2.imshow("Road Following Debug", debug_img)
                 cv2.waitKey(1)
 
@@ -674,12 +650,12 @@ class Follow_Trace_Node(Node):
                         (0.87,2.44),
                         (0.87,2.78),
                         (0.55,2.98),
-                        (0.87,3.35),
-                        (0.4,4.5)
+                        (0.9,3.55),
+                        (0.4,4.4)
                     ]
                     self._current_target_index = 0
                     self._position_tolerance = 0.05
-                    log_info(self, f"[КООРДИНАТЫ] Начинаем движение с поворотом на месте")
+
                 
                 # Получаем позицию
                 current_x = self.pose.pose.pose.position.x
@@ -704,7 +680,7 @@ class Follow_Trace_Node(Node):
                 
                 # Проверяем достижение точки
                 if distance <= self._position_tolerance:
-                    log_info(self, f"[КООРДИНАТЫ] Достигнута точка {self._current_target_index + 1}")
+                    
                     self.twist.linear.x = 0.0
                     self.twist.angular.z = 0.0
                     self._robot_cmd_vel_pub.publish(self.twist)
@@ -715,6 +691,7 @@ class Follow_Trace_Node(Node):
                         log_info(self, "[КООРДИНАТЫ] Все точки достигнуты!")
                         self._msg.data = "bitovie_pelmeni"
                         self._sign_finish.publish(self._msg)
+                        rclpy.shutdown()
                         return
                     
                     time.sleep(0.5)
@@ -726,24 +703,18 @@ class Follow_Trace_Node(Node):
                     self.twist.linear.x = 0.0  # НЕТ линейного движения
                     self.twist.angular.z = math.copysign(0.4, angle_error)  # поворот на месте
                     
-                    if INFO_LEVEL:
-                        log_info(self, f"[КООРДИНАТЫ] Поворот на месте к цели. Ошибка угла: {angle_error:.3f}")
+                   
                 else:
                     # Движемся прямо к цели (без подруливания)
                     self.twist.linear.x = 0.15  # низкая скорость
                     self.twist.angular.z = 0.0  # НЕТ угловой скорости
                     
-                    if INFO_LEVEL:
-                        log_info(self, f"[КООРДИНАТЫ] Движение вперед к цели. Расстояние: {distance:.2f} м")
+                    
                 
                 # Публикуем команды
                 self._robot_cmd_vel_pub.publish(self.twist)
     
-                # Простая визуализация
-                if INFO_LEVEL:
-                    print(f"[NAV] Target: ({target_x:.2f}, {target_y:.2f}), Dist: {distance:.2f}, Angle err: {angle_error:.3f}")
-                            
-
+                
 
 
 
@@ -813,21 +784,6 @@ class Follow_Trace_Node(Node):
             self._consecutive_detections = 0
             self._consecutive_misses += 1
         
-        # Визуализация поиска
-        if INFO_LEVEL:
-            search_img = np.zeros((200, 400, 3), dtype=np.uint8)
-            remaining = self._search_duration - elapsed
-            cv2.putText(search_img, f"SEARCHING LINE", (50, 80), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 165, 0), 2)
-            cv2.putText(search_img, f"Dir: {self._search_direction}", (50, 110), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0), 2)
-            cv2.putText(search_img, f"Detections: {self._consecutive_detections}/{self._min_detections}", (50, 140), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 165, 0), 2)
-            cv2.putText(search_img, f"Remaining: {remaining:.1f}s", (50, 170), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0), 2)
-            cv2.imshow("Line Search Status", search_img)
-            cv2.waitKey(1)
-        
         # Продолжаем движение в направлении поиска
         self.twist.linear.x = self._turn_linear_speed * 0.5  # Медленнее во время поиска
         
@@ -864,16 +820,7 @@ class Follow_Trace_Node(Node):
         current_time = time.time()
         elapsed = current_time - self._turn_start_time
         
-        # Визуализация поворота
-        if INFO_LEVEL:
-            turn_img = np.zeros((200, 400, 3), dtype=np.uint8)
-            remaining = self._turn_duration - elapsed
-            cv2.putText(turn_img, f"TURNING {self._turn_direction}", (50, 80), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
-            cv2.putText(turn_img, f"Remaining: {remaining:.1f}s", (60, 120), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-            cv2.imshow("Turn Status", turn_img)
-            cv2.waitKey(1)
+
         
         # Управление во время поворота
         self.twist.linear.x = self._turn_linear_speed
