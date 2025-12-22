@@ -44,7 +44,9 @@ ros2 run referee_console mission_autorace_2025_referee
 - **Механизм восстановления** при потере линии слежения
 
 #### 2. Обработка компьютерного зрения
+
 <img width="638" height="572" alt="image" src="https://github.com/user-attachments/assets/b0e99b59-3e65-48ce-a695-5312a7a28301" />
+
 ##### Детекция линий дорожной разметки:
 - **Метод `_find_yellow_line`** - обнаружение желтой линии с использованием:
   - Преобразования в HSV цветовое пространство
