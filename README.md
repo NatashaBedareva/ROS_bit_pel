@@ -4,6 +4,7 @@
 1. Скачать репозиторий ROS_bit_pel
 2. Скачать репозиторий my_robot
 3. Запустить решение
+
 Терминал 1:
 ```bash
 ros2 launch robot_bringup autorace_2025.launch.py
