@@ -2,6 +2,8 @@
 import os
 import time
 from collections import deque
+import math
+
 
 from module.config import (
     OFFSET_BTW_CENTERS,
@@ -24,6 +26,8 @@ from module.traffic_direction import check_direction, analyze_arrow_direction
 # обработка логов
 from module.logger import log_info
 
+
+
 import rclpy
 from rclpy.node import Node
 
@@ -37,6 +41,7 @@ from geometry_msgs.msg import Twist
 from tf_transformations import euler_from_quaternion
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from std_msgs.msg import String
+from sensor_msgs.msg import LaserScan, Image
 
 import cv2
 import math
@@ -55,7 +60,7 @@ class Follow_Trace_Node(Node):
         self._pose_sub = self.create_subscription(Odometry, '/odom', self.pose_callback, 10)
         self._robot_cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
         self._sign_finish = self.create_publisher(String ,'/robot_finish', 10)
-        
+    
         self._cv_bridge = CvBridge()
         self._msg = String()
         self.pose = Odometry()
@@ -113,7 +118,7 @@ class Follow_Trace_Node(Node):
         self._turn_angular_speed = 1.0  # радиан/сек для поворота
         self._turn_linear_speed = 0.3   # м/с во время поворота
 
-        self._turn_angular_speed_RIGHT = 0.7  # радиан/сек для поворота НАПРАВО
+        self._turn_angular_speed_RIGHT = 0.6  # радиан/сек для поворота НАПРАВО
         
         # ДОБАВЛЯЕМ: состояние поиска линии после поворота
         self._line_search_mode = False
@@ -552,10 +557,6 @@ class Follow_Trace_Node(Node):
                         # Если направление еще не определено, пытаемся его определить
                         self._determine_direction_during_stop(cvImg)
             
-            # 14. Попытка остановиться (финиш)
-            if self.TASK_LEVEL == 2 and (time.time() - self.START_TIME) > 40:
-                self._msg.data = "bitovie_pelmeni"
-                self._sign_finish.publish(self._msg)   
             
             # 15. Управление роботом (только если не остановлен, не поворачивает и не ищет линии)
             if not self._is_stopped and not self._is_turning and not self._line_search_mode:
@@ -660,6 +661,90 @@ class Follow_Trace_Node(Node):
             # 17. Публикуем команды управления
             if self.STATUS_CAR == 1 and not self._is_stopped and not self._is_turning and not self._line_search_mode:
                 self._robot_cmd_vel_pub.publish(self.twist)
+
+
+            if self.TASK_LEVEL == 2 and (time.time() - self.START_TIME) > 80:
+                log_info(self, f"[КОНУСЫ] Начинаем объезд конусов")
+                self.TASK_LEVEL = 3
+                
+
+            if self.TASK_LEVEL == 3:
+                if not hasattr(self, '_target_points'):
+                    self._target_points = [
+                        (0.87,2.44),
+                        (0.87,2.78),
+                        (0.55,2.98),
+                        (0.87,3.35),
+                        (0.4,4.5)
+                    ]
+                    self._current_target_index = 0
+                    self._position_tolerance = 0.05
+                    log_info(self, f"[КООРДИНАТЫ] Начинаем движение с поворотом на месте")
+                
+                # Получаем позицию
+                current_x = self.pose.pose.pose.position.x
+                current_y = self.pose.pose.pose.position.y
+                current_angle = self.get_angle()
+                
+                # Текущая цель
+                target_x, target_y = self._target_points[self._current_target_index]
+                
+                # Вычисляем угол к цели
+                dx = target_x - current_x
+                dy = target_y - current_y
+                distance = math.sqrt(dx**2 + dy**2)
+                desired_angle = math.atan2(dy, dx)
+                
+                # Нормализуем разницу углов
+                angle_error = desired_angle - current_angle
+                while angle_error > math.pi:
+                    angle_error -= 2 * math.pi
+                while angle_error < -math.pi:
+                    angle_error += 2 * math.pi
+                
+                # Проверяем достижение точки
+                if distance <= self._position_tolerance:
+                    log_info(self, f"[КООРДИНАТЫ] Достигнута точка {self._current_target_index + 1}")
+                    self.twist.linear.x = 0.0
+                    self.twist.angular.z = 0.0
+                    self._robot_cmd_vel_pub.publish(self.twist)
+                    
+                    self._current_target_index += 1
+                    
+                    if self._current_target_index >= len(self._target_points):
+                        log_info(self, "[КООРДИНАТЫ] Все точки достигнуты!")
+                        self._msg.data = "bitovie_pelmeni"
+                        self._sign_finish.publish(self._msg)
+                        return
+                    
+                    time.sleep(0.5)
+                    return
+                
+                # ПОВОРОТ НА МЕСТЕ: сначала полностью поворачиваемся, потом движемся
+                if abs(angle_error) > 0.05:  # около 3 градусов
+                    # Поворачиваем на месте
+                    self.twist.linear.x = 0.0  # НЕТ линейного движения
+                    self.twist.angular.z = math.copysign(0.4, angle_error)  # поворот на месте
+                    
+                    if INFO_LEVEL:
+                        log_info(self, f"[КООРДИНАТЫ] Поворот на месте к цели. Ошибка угла: {angle_error:.3f}")
+                else:
+                    # Движемся прямо к цели (без подруливания)
+                    self.twist.linear.x = 0.15  # низкая скорость
+                    self.twist.angular.z = 0.0  # НЕТ угловой скорости
+                    
+                    if INFO_LEVEL:
+                        log_info(self, f"[КООРДИНАТЫ] Движение вперед к цели. Расстояние: {distance:.2f} м")
+                
+                # Публикуем команды
+                self._robot_cmd_vel_pub.publish(self.twist)
+    
+                # Простая визуализация
+                if INFO_LEVEL:
+                    print(f"[NAV] Target: ({target_x:.2f}, {target_y:.2f}), Dist: {distance:.2f}, Angle err: {angle_error:.3f}")
+                            
+
+
 
 
 
